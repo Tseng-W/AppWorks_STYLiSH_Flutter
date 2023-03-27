@@ -82,49 +82,76 @@ class CategoryList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(itemBuilder: (context, index) {
-      return Padding(
-          padding: const EdgeInsets.only(
-              left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.rectangle,
-              border: Border.all(color: Colors.grey, width: 2.0),
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8.0),
-              child: SizedBox(
-                height: 150,
-                child: Row(
+    const padding = 8.0;
+
+    return Column(
+      children: [
+        Text(
+          '女裝',
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        Expanded(
+          child: ListView.builder(itemBuilder: (context, index) {
+            return const Padding(
+                padding: EdgeInsets.only(
+                    left: padding,
+                    right: padding,
+                    top: padding / 2,
+                    bottom: padding / 2),
+                child: CategoryCell());
+          }),
+        ),
+      ],
+    );
+  }
+}
+
+class CategoryCell extends StatelessWidget {
+  const CategoryCell({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    const padding = 8.0;
+    const borderRadius = 8.0;
+
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.rectangle,
+        border: Border.all(color: Colors.grey, width: 2.0),
+        borderRadius: BorderRadius.circular(borderRadius),
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: SizedBox(
+          height: 150,
+          child: Row(
+            children: [
+              Image.asset(
+                'images/nope.jpg',
+                fit: BoxFit.fitHeight,
+              ),
+              Padding(
+                padding: const EdgeInsets.all(padding),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Image.asset(
-                      'images/nope.jpg',
-                      fit: BoxFit.fitHeight,
+                    Text(
+                      'UNIQLO 特級級輕羽絨外套',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'UNIQLO 特級級輕羽絨外套',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                          Text(
-                            'NT\$ $index',
-                            style: Theme.of(context).textTheme.titleLarge,
-                          ),
-                        ],
-                      ),
+                    Text(
+                      'NT\$ 233',
+                      style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ],
                 ),
               ),
-            ),
-          ));
-    });
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
