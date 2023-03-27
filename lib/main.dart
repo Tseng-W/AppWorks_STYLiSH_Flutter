@@ -17,14 +17,13 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const MyHomePage(),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-  final String title;
+  const MyHomePage({super.key});
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -42,27 +41,102 @@ class _MyHomePageState extends State<MyHomePage> {
             fit: BoxFit.contain,
           )),
       body: Column(
+        children: const [
+          HotProductsList(),
+          CategoryLists(),
+        ],
+      ),
+    );
+  }
+}
+
+class CategoryLists extends StatelessWidget {
+  const CategoryLists({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Row(
         children: [
-          SizedBox(
-            height: 200,
-            child: ListView.builder(
-              shrinkWrap: true,
-              scrollDirection: Axis.horizontal,
-              itemCount: 1000,
-              itemBuilder: (context, index) {
-                return Container(
-                  width: 200,
-                  color: Colors.primaries[index % Colors.primaries.length],
-                );
-              },
-            ),
+          Expanded(
+            child: ListView.builder(itemBuilder: (context, index) {
+              return Padding(
+                  padding: const EdgeInsets.only(
+                      left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
+                  child: Container(
+                    height: 200,
+                    color: Colors.blue,
+                  ));
+            }),
           ),
           Expanded(
-            child: Container(
-              color: Colors.green,
-            ),
+            child: ListView.builder(itemBuilder: (context, index) {
+              return Padding(
+                  padding: const EdgeInsets.only(
+                      left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
+                  child: Container(
+                    height: 200,
+                    color: Colors.blue,
+                  ));
+            }),
+          ),
+          Expanded(
+            child: ListView.builder(itemBuilder: (context, index) {
+              return Padding(
+                  padding: const EdgeInsets.only(
+                      left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
+                  child: Container(
+                    height: 200,
+                    color: Colors.blue,
+                  ));
+            }),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class HotProductsList extends StatelessWidget {
+  const HotProductsList({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 200,
+      child: ListView.builder(
+        shrinkWrap: true,
+        scrollDirection: Axis.horizontal,
+        itemCount: 1000,
+        itemBuilder: (context, index) {
+          return const Padding(
+            padding:
+                EdgeInsets.only(left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
+            child: HotProduct(),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class HotProduct extends StatelessWidget {
+  const HotProduct({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(8.0),
+      child: Image.asset(
+        'images/doge.jpg',
+        width: 300,
+        fit: BoxFit.cover,
       ),
     );
   }
