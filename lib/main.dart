@@ -102,18 +102,22 @@ class CategoryList extends StatelessWidget {
                       'images/nope.jpg',
                       fit: BoxFit.fitHeight,
                     ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'UNIQLO 特級級輕羽絨外套',
-                          style: Theme.of(context).textTheme.headline6,
-                        ),
-                        Text(
-                          'NT $index',
-                          style: Theme.of(context).textTheme.subtitle1,
-                        ),
-                      ],
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'UNIQLO 特級級輕羽絨外套',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                          Text(
+                            'NT\$ $index',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
