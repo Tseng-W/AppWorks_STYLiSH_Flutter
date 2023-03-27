@@ -57,28 +57,67 @@ class CategoryLists extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Row(
-        children: const [
-          Expanded(
-            child: CategoryList(),
-          ),
-          Expanded(
-            child: CategoryList(),
-          ),
-          Expanded(
-            child: CategoryList(),
-          ),
-        ],
-      ),
-    );
+    final size = MediaQuery.of(context).size;
+    final aspectRatio = size.width / size.height;
+
+    const mockListAmout = 10;
+    final mockCategoryList = List.generate(
+        mockListAmout,
+        (index) =>
+            CategoryItem('UNIQLO 特級級輕羽絨外套', index + 1, 'images/nope.jpg'));
+
+    final List<CategoryData> mockCategoryData = [
+      CategoryData('女裝', mockCategoryList),
+      CategoryData('男裝', mockCategoryList),
+      CategoryData('飾品', mockCategoryList),
+    ];
+
+    if (aspectRatio > 1) {
+      return Expanded(
+        child: Row(
+          children: [
+            Expanded(child: CategoryList(categoryData: mockCategoryData[0])),
+            Expanded(child: CategoryList(categoryData: mockCategoryData[1])),
+            Expanded(child: CategoryList(categoryData: mockCategoryData[2])),
+          ],
+        ),
+      );
+    } else {
+      return Expanded(
+        child: Row(
+          children: [
+            Expanded(
+                child: CategoryList(
+                    categoryData: CategoryData('女裝', mockCategoryList))),
+          ],
+        ),
+      );
+    }
   }
+}
+
+class CategoryData {
+  final String categoryType;
+  final List<CategoryItem> items;
+
+  CategoryData(this.categoryType, this.items);
+}
+
+class CategoryItem {
+  final String title;
+  final int price;
+  final String image;
+
+  CategoryItem(this.title, this.price, this.image);
 }
 
 class CategoryList extends StatelessWidget {
   const CategoryList({
     super.key,
+    required this.categoryData,
   });
+
+  final CategoryData categoryData;
 
   @override
   Widget build(BuildContext context) {
@@ -87,19 +126,24 @@ class CategoryList extends StatelessWidget {
     return Column(
       children: [
         Text(
-          '女裝',
+          categoryData.categoryType,
           style: Theme.of(context).textTheme.titleLarge,
         ),
         Expanded(
-          child: ListView.builder(itemBuilder: (context, index) {
-            return const Padding(
-                padding: EdgeInsets.only(
-                    left: padding,
-                    right: padding,
-                    top: padding / 2,
-                    bottom: padding / 2),
-                child: CategoryCell());
-          }),
+          child: ListView.builder(
+              itemCount: 10,
+              shrinkWrap: true,
+              itemBuilder: (context, index) {
+                return Padding(
+                    padding: const EdgeInsets.only(
+                        left: padding,
+                        right: padding,
+                        top: padding / 2,
+                        bottom: padding / 2),
+                    child: CategoryCell(
+                      categoryItem: categoryData.items[index],
+                    ));
+              }),
         ),
       ],
     );
@@ -107,7 +151,9 @@ class CategoryList extends StatelessWidget {
 }
 
 class CategoryCell extends StatelessWidget {
-  const CategoryCell({super.key});
+  const CategoryCell({super.key, required this.categoryItem});
+
+  final CategoryItem categoryItem;
 
   @override
   Widget build(BuildContext context) {
@@ -127,26 +173,29 @@ class CategoryCell extends StatelessWidget {
           child: Row(
             children: [
               Image.asset(
-                'images/nope.jpg',
+                categoryItem.image,
                 fit: BoxFit.fitHeight,
               ),
-              Padding(
-                padding: const EdgeInsets.all(padding),
+              const SizedBox(
+                width: padding,
+              ),
+              Expanded(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'UNIQLO 特級級輕羽絨外套',
+                      categoryItem.title,
                       style: Theme.of(context).textTheme.titleLarge,
+                      softWrap: true,
                     ),
                     Text(
-                      'NT\$ 233',
+                      'NT\$ ${categoryItem.price}',
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                   ],
                 ),
-              ),
+              )
             ],
           ),
         ),
@@ -165,9 +214,8 @@ class HotProductsList extends StatelessWidget {
     return SizedBox(
       height: 200,
       child: ListView.builder(
-        shrinkWrap: true,
         scrollDirection: Axis.horizontal,
-        itemCount: 1000,
+        itemCount: 10,
         itemBuilder: (context, index) {
           return const Padding(
             padding:
