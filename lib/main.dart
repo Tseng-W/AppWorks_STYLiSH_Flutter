@@ -34,7 +34,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 221, 221, 221),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           title: Image.asset(
             'images/logo.png',
             height: 36,
@@ -59,43 +59,68 @@ class CategoryLists extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: Row(
-        children: [
+        children: const [
           Expanded(
-            child: ListView.builder(itemBuilder: (context, index) {
-              return Padding(
-                  padding: const EdgeInsets.only(
-                      left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
-                  child: Container(
-                    height: 200,
-                    color: Colors.blue,
-                  ));
-            }),
+            child: CategoryList(),
           ),
           Expanded(
-            child: ListView.builder(itemBuilder: (context, index) {
-              return Padding(
-                  padding: const EdgeInsets.only(
-                      left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
-                  child: Container(
-                    height: 200,
-                    color: Colors.blue,
-                  ));
-            }),
+            child: CategoryList(),
           ),
           Expanded(
-            child: ListView.builder(itemBuilder: (context, index) {
-              return Padding(
-                  padding: const EdgeInsets.only(
-                      left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
-                  child: Container(
-                    height: 200,
-                    color: Colors.blue,
-                  ));
-            }),
+            child: CategoryList(),
           ),
         ],
       ),
     );
+  }
+}
+
+class CategoryList extends StatelessWidget {
+  const CategoryList({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(itemBuilder: (context, index) {
+      return Padding(
+          padding: const EdgeInsets.only(
+              left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              border: Border.all(color: Colors.grey, width: 2.0),
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: SizedBox(
+                height: 150,
+                child: Row(
+                  children: [
+                    Image.asset(
+                      'images/nope.jpg',
+                      fit: BoxFit.fitHeight,
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'UNIQLO 特級級輕羽絨外套',
+                          style: Theme.of(context).textTheme.headline6,
+                        ),
+                        Text(
+                          'NT $index',
+                          style: Theme.of(context).textTheme.subtitle1,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ));
+    });
   }
 }
 
