@@ -76,9 +76,17 @@ class CategoryLists extends StatelessWidget {
       return Expanded(
         child: Row(
           children: [
-            Expanded(child: CategoryList(categoryData: mockCategoryData[0])),
-            Expanded(child: CategoryList(categoryData: mockCategoryData[1])),
-            Expanded(child: CategoryList(categoryData: mockCategoryData[2])),
+            Expanded(
+                child: CategoryList(
+              categoryData: mockCategoryData[0],
+              needShrink: false,
+            )),
+            Expanded(
+                child: CategoryList(
+                    categoryData: mockCategoryData[1], needShrink: false)),
+            Expanded(
+                child: CategoryList(
+                    categoryData: mockCategoryData[2], needShrink: false)),
           ],
         ),
       );
@@ -87,8 +95,20 @@ class CategoryLists extends StatelessWidget {
         child: Row(
           children: [
             Expanded(
-                child: CategoryList(
-                    categoryData: CategoryData('女裝', mockCategoryList))),
+                child: ListView.builder(
+                    itemCount: mockCategoryData.length,
+                    itemBuilder: (context, index) {
+                      return ListView.builder(
+                        shrinkWrap: true,
+                        itemCount: 1,
+                        itemBuilder: (_, _) {
+                          return CategoryList(
+                            categoryData: mockCategoryData[index],
+                            needShrink: true,
+                          );
+                        },
+                      );
+                    }))
           ],
         ),
       );
@@ -115,38 +135,54 @@ class CategoryList extends StatelessWidget {
   const CategoryList({
     super.key,
     required this.categoryData,
+    required this.needShrink,
   });
 
   final CategoryData categoryData;
+  final bool needShrink;
 
   @override
   Widget build(BuildContext context) {
     const padding = 8.0;
 
-    return Column(
-      children: [
-        Text(
-          categoryData.categoryType,
-          style: Theme.of(context).textTheme.titleLarge,
-        ),
-        Expanded(
-          child: ListView.builder(
-              itemCount: 10,
-              shrinkWrap: true,
-              itemBuilder: (context, index) {
-                return Padding(
-                    padding: const EdgeInsets.only(
-                        left: padding,
-                        right: padding,
-                        top: padding / 2,
-                        bottom: padding / 2),
-                    child: CategoryCell(
-                      categoryItem: categoryData.items[index],
-                    ));
-              }),
-        ),
-      ],
-    );
+    final listViewBuilder = ListView.builder(
+        itemCount: categoryData.items.length,
+        shrinkWrap: needShrink,
+        itemBuilder: (context, index) {
+          return Padding(
+              padding: const EdgeInsets.only(
+                  left: padding,
+                  right: padding,
+                  top: padding / 2,
+                  bottom: padding / 2),
+              child: CategoryCell(
+                categoryItem: categoryData.items[index],
+              ));
+        });
+
+    if (needShrink) {
+      return Column(
+        children: [
+          Text(
+            categoryData.categoryType,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          listViewBuilder
+        ],
+      );
+    } else {
+      return Column(
+        children: [
+          Text(
+            categoryData.categoryType,
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+          Expanded(
+            child: listViewBuilder,
+          ),
+        ],
+      );
+    }
   }
 }
 
