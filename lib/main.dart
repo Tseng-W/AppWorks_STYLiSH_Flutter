@@ -98,15 +98,9 @@ class CategoryLists extends StatelessWidget {
                 child: ListView.builder(
                     itemCount: mockCategoryData.length,
                     itemBuilder: (context, index) {
-                      return ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: 1,
-                        itemBuilder: (_, _) {
-                          return CategoryList(
-                            categoryData: mockCategoryData[index],
-                            needShrink: true,
-                          );
-                        },
+                      return CategoryList(
+                        categoryData: mockCategoryData[index],
+                        needShrink: true,
                       );
                     }))
           ],
