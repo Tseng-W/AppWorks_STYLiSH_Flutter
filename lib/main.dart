@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stylish_wen/pages/category_lists.dart';
 import 'package:stylish_wen/pages/hot_product_list.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: const ProviderScope(child: MyHomePage()),
     );
   }
 }
