@@ -16,8 +16,11 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+          primarySwatch: Colors.blue,
+          appBarTheme: AppBarTheme(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            foregroundColor: const Color.fromARGB(255, 84, 84, 84),
+          )),
       home: const ProviderScope(child: MyHomePage()),
     );
   }
@@ -35,12 +38,11 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           title: Image.asset(
-            'images/logo.png',
-            height: 36,
-            fit: BoxFit.contain,
-          )),
+        'images/logo.png',
+        height: 36,
+        fit: BoxFit.contain,
+      )),
       body: Column(
         children: const [
           HotProductsList(),

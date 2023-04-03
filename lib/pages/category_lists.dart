@@ -1,8 +1,7 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stylish_wen/data/category_model.dart';
+import 'package:stylish_wen/pages/category_detail.dart';
 
 final categoryListViewModelProvider =
     StateNotifierProvider<CategoryListViewModel, List<CategoryData>>(
@@ -19,8 +18,11 @@ class CategoryListViewModel extends StateNotifier<List<CategoryData>> {
         categoryTitle,
         List.generate(
             mockListCount,
-            (index) => CategoryItem('UNIQLO 特級級輕羽絨外套', index + 1,
-                Image.asset('images/nope.jpg'), index)));
+            (index) => CategoryItem(
+                'UNIQLO 特級級輕羽絨外套',
+                index + 1,
+                Image.asset('images/nope.jpg'),
+                categoryTitle + index.toString())));
   }
 
   void fetchCategoryList() async {
@@ -93,9 +95,9 @@ class WideCategoryLists extends StatelessWidget {
     return Expanded(
       child: Row(
           children: categoryLists
-              .map((e) => Expanded(
+              .map((list) => Expanded(
                       child: CategoryList(
-                    categoryData: e,
+                    categoryData: list,
                     needShrink: false,
                   )))
               .toList()),
@@ -154,43 +156,50 @@ class CategoryCell extends StatelessWidget {
     const padding = 8.0;
     const borderRadius = 8.0;
 
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.rectangle,
-        border: Border.all(color: Colors.grey, width: 2.0),
-        borderRadius: BorderRadius.circular(borderRadius),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: SizedBox(
-          height: 150,
-          child: Row(
-            children: [
-              const Placeholder(
-                fallbackHeight: 240,
-                fallbackWidth: 100,
-              ),
-              const SizedBox(
-                width: padding,
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      categoryItem.title,
-                      style: Theme.of(context).textTheme.titleLarge,
-                      softWrap: true,
-                    ),
-                    Text(
-                      'NT\$ ${categoryItem.price}',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ],
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) {
+          return CategoryDetail();
+        }));
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          shape: BoxShape.rectangle,
+          border: Border.all(color: Colors.grey, width: 2.0),
+          borderRadius: BorderRadius.circular(borderRadius),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: SizedBox(
+            height: 150,
+            child: Row(
+              children: [
+                const Placeholder(
+                  fallbackHeight: 240,
+                  fallbackWidth: 100,
                 ),
-              )
-            ],
+                const SizedBox(
+                  width: padding,
+                ),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        categoryItem.title,
+                        style: Theme.of(context).textTheme.titleLarge,
+                        softWrap: true,
+                      ),
+                      Text(
+                        'NT\$ ${categoryItem.price}',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),

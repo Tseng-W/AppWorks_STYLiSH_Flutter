@@ -8,7 +8,7 @@ class CategoryData {
 }
 
 class CategoryItem {
-  final int uuid;
+  final String uuid;
   final String title;
   final int price;
   final Image image;
