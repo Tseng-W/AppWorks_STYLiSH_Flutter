@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-final hotProductViewModelProvider = ChangeNotifierProvider<HotProductViewModel>(
+final hotProductViewModelProvider =
+    StateNotifierProvider<HotProductViewModel, List<HotProductModel>>(
   (ref) => HotProductViewModel(),
 );
 
@@ -12,57 +13,45 @@ class HotProductModel {
   HotProductModel(this.uuid, this.image);
 }
 
-class HotProductViewModel extends ChangeNotifier {
-  List<HotProductModel> _productList = [];
-
-  List<HotProductModel> get productList => _productList;
-
-  set lists(List<HotProductModel> value) {
-    _productList = value;
-    notifyListeners();
-  }
-
+class HotProductViewModel extends StateNotifier<List<HotProductModel>> {
+  HotProductViewModel() : super([]);
   void fetchProductList() async {
     await Future.delayed(const Duration(seconds: 2));
-    lists = List.generate(
+    state = List.generate(
         10,
         (index) => HotProductModel(index,
             const Image(image: AssetImage('assets/images/placeholder.png'))));
   }
 }
 
-class HotProductsList extends StatelessWidget {
+class HotProductsList extends ConsumerWidget {
   const HotProductsList({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Consumer(
-      builder: (context, ref, child) {
-        final viewModel = ref.watch(hotProductViewModelProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final list = ref.watch(hotProductViewModelProvider);
 
-        viewModel.fetchProductList();
+    ref.watch(hotProductViewModelProvider.notifier).fetchProductList();
 
-        return SizedBox(
-          height: 200,
-          child: viewModel.productList.isEmpty
-              ? const Center(
-                  child: CircularProgressIndicator(),
-                )
-              : ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: viewModel.productList.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(
-                          left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
-                      child: HotProduct(
-                        product: viewModel.productList[index],
-                      ),
-                    );
-                  },
-                ),
-        );
-      },
+    return SizedBox(
+      height: 200,
+      child: list.isEmpty
+          ? const Center(
+              child: CircularProgressIndicator(),
+            )
+          : ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: list.length,
+              itemBuilder: (context, index) {
+                return Padding(
+                  padding: const EdgeInsets.only(
+                      left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
+                  child: HotProduct(
+                    product: list[index],
+                  ),
+                );
+              },
+            ),
     );
   }
 }

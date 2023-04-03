@@ -1,63 +1,105 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stylish_wen/data/category_model.dart';
 
-class CategoryLists extends StatelessWidget {
-  const CategoryLists({
-    super.key,
-  });
+final categoryListViewModelProvider =
+    StateNotifierProvider<CategoryListViewModel, List<CategoryData>>(
+  (ref) => CategoryListViewModel(),
+);
+
+class CategoryListViewModel extends StateNotifier<List<CategoryData>> {
+  CategoryListViewModel() : super([]);
+
+  final mockListCount = 10;
+
+  CategoryData generateMockList(String categoryTitle) {
+    return CategoryData(
+        categoryTitle,
+        List.generate(
+            mockListCount,
+            (index) => CategoryItem('UNIQLO 特級級輕羽絨外套', index + 1,
+                Image.asset('images/nope.jpg'), index)));
+  }
+
+  void fetchCategoryList() async {
+    await Future.delayed(const Duration(seconds: 2));
+    state = [
+      generateMockList('女裝'),
+      generateMockList('男裝'),
+      generateMockList('飾品'),
+    ];
+  }
+}
+
+class CategoryLists extends ConsumerWidget {
+  const CategoryLists({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final size = MediaQuery.of(context).size;
     final aspectRatio = size.width / size.height;
 
-    const mockListAmount = 10;
-    final mockCategoryList = List.generate(
-        mockListAmount,
-        (index) =>
-            CategoryItem('UNIQLO 特級級輕羽絨外套', index + 1, 'images/nope.jpg'));
+    return Consumer(builder: (context, ref, child) {
+      final list = ref.watch(categoryListViewModelProvider);
+      ref.watch(categoryListViewModelProvider.notifier).fetchCategoryList();
 
-    final List<CategoryData> mockCategoryData = [
-      CategoryData('女裝', mockCategoryList),
-      CategoryData('男裝', mockCategoryList),
-      CategoryData('飾品', mockCategoryList),
-    ];
+      if (list.isEmpty) {
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      }
 
-    if (aspectRatio > 1) {
-      return Expanded(
-        child: Row(
-          children: [
-            Expanded(
-                child: CategoryList(
-              categoryData: mockCategoryData[0],
-              needShrink: false,
-            )),
-            Expanded(
-                child: CategoryList(
-                    categoryData: mockCategoryData[1], needShrink: false)),
-            Expanded(
-                child: CategoryList(
-                    categoryData: mockCategoryData[2], needShrink: false)),
-          ],
-        ),
-      );
-    } else {
-      return Expanded(
-        child: Row(
-          children: [
-            Expanded(
-                child: ListView.builder(
-                    itemCount: mockCategoryData.length,
-                    itemBuilder: (context, index) {
-                      return CategoryList(
-                        categoryData: mockCategoryData[index],
-                        needShrink: true,
-                      );
-                    }))
-          ],
-        ),
-      );
-    }
+      return (aspectRatio > 1)
+          ? WideCategoryLists(categoryLists: list)
+          : NarrowCategoryLists(categoryLists: list);
+    });
+  }
+}
+
+class NarrowCategoryLists extends StatelessWidget {
+  const NarrowCategoryLists({
+    super.key,
+    required this.categoryLists,
+  });
+
+  final List<CategoryData> categoryLists;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+        child: ListView.builder(
+            itemCount: categoryLists.length,
+            itemBuilder: (context, index) {
+              return CategoryList(
+                categoryData: categoryLists[index],
+                needShrink: true,
+              );
+            }));
+  }
+}
+
+class WideCategoryLists extends StatelessWidget {
+  const WideCategoryLists({
+    super.key,
+    required this.categoryLists,
+  });
+
+  final List<CategoryData> categoryLists;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Row(
+          children: categoryLists
+              .map((e) => Expanded(
+                      child: CategoryList(
+                    categoryData: e,
+                    needShrink: false,
+                  )))
+              .toList()),
+    );
   }
 }
 
@@ -90,29 +132,15 @@ class CategoryList extends StatelessWidget {
               ));
         });
 
-    if (needShrink) {
-      return Column(
-        children: [
-          Text(
-            categoryData.categoryType,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          listViewBuilder
-        ],
-      );
-    } else {
-      return Column(
-        children: [
-          Text(
-            categoryData.categoryType,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          Expanded(
-            child: listViewBuilder,
-          ),
-        ],
-      );
-    }
+    return Column(
+      children: [
+        Text(
+          categoryData.categoryType,
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        needShrink ? listViewBuilder : Expanded(child: listViewBuilder)
+      ],
+    );
   }
 }
 

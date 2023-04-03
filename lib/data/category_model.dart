@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class CategoryData {
   final String categoryType;
   final List<CategoryItem> items;
@@ -6,9 +8,10 @@ class CategoryData {
 }
 
 class CategoryItem {
+  final int uuid;
   final String title;
   final int price;
-  final String image;
+  final Image image;
 
-  CategoryItem(this.title, this.price, this.image);
+  CategoryItem(this.title, this.price, this.image, this.uuid);
 }
