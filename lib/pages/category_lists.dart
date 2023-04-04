@@ -1,37 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stylish_wen/data/category_model.dart';
-import 'package:stylish_wen/pages/category_detail.dart';
+import 'package:stylish_wen/data/product_detail_model.dart';
+import 'package:stylish_wen/main.dart';
+import 'package:stylish_wen/model/api_service.dart';
+import 'package:stylish_wen/data/product_detail_model.dart';
+import 'package:stylish_wen/pages/product_detail.dart';
 
 final categoryListViewModelProvider =
     StateNotifierProvider<CategoryListViewModel, List<CategoryData>>(
-  (ref) => CategoryListViewModel(),
+  (ref) => CategoryListViewModel(ref.read(apiServiceProvider)),
 );
 
 class CategoryListViewModel extends StateNotifier<List<CategoryData>> {
-  CategoryListViewModel() : super([]);
+  CategoryListViewModel(this._apiService) : super([]);
 
-  final mockListCount = 10;
-
-  CategoryData generateMockList(String categoryTitle) {
-    return CategoryData(
-        categoryTitle,
-        List.generate(
-            mockListCount,
-            (index) => CategoryItem(
-                'UNIQLO 特級級輕羽絨外套',
-                index + 1,
-                Image.asset('images/nope.jpg'),
-                categoryTitle + index.toString())));
-  }
+  final APIServiceProtocol _apiService;
 
   void fetchCategoryList() async {
-    await Future.delayed(const Duration(seconds: 2));
-    state = [
-      generateMockList('女裝'),
-      generateMockList('男裝'),
-      generateMockList('飾品'),
-    ];
+    await Future.delayed(const Duration(seconds: 1));
+    state = await _apiService.fetchCategoryList();
+  }
+
+  Future<ProductDetailModel> fetchProductDetail(String uuid) async {
+    await Future.delayed(const Duration(seconds: 1));
+    return await _apiService.fetchProductDetail(uuid);
   }
 }
 
@@ -43,9 +36,10 @@ class CategoryLists extends ConsumerWidget {
     final size = MediaQuery.of(context).size;
     final aspectRatio = size.width / size.height;
 
+    ref.read(categoryListViewModelProvider.notifier).fetchCategoryList();
+
     return Consumer(builder: (context, ref, child) {
       final list = ref.watch(categoryListViewModelProvider);
-      ref.watch(categoryListViewModelProvider.notifier).fetchCategoryList();
 
       if (list.isEmpty) {
         return const Center(
@@ -105,7 +99,7 @@ class WideCategoryLists extends StatelessWidget {
   }
 }
 
-class CategoryList extends StatelessWidget {
+class CategoryList extends ConsumerWidget {
   const CategoryList({
     super.key,
     required this.categoryData,
@@ -116,19 +110,30 @@ class CategoryList extends StatelessWidget {
   final bool needShrink;
 
   @override
-  Widget build(BuildContext context) {
-    const padding = 8.0;
+  Widget build(context, ref) {
+    final viewModel = ref.read(categoryListViewModelProvider.notifier);
+    final loadingStatus = ref.watch(LoadingStatusNotifierProvider.notifier);
 
     final listViewBuilder = ListView.builder(
         itemCount: categoryData.items.length,
         shrinkWrap: needShrink,
         itemBuilder: (context, index) {
-          return Padding(
-              padding: const EdgeInsets.only(
-                  left: padding,
-                  right: padding,
-                  top: padding / 2,
-                  bottom: padding / 2),
+          return GestureDetector(
+              onTap: () {
+                loadingStatus.startLoading();
+                viewModel
+                    .fetchProductDetail(categoryData.items[index].uuid)
+                    .then((model) {
+                  loadingStatus.endLoading();
+                  Navigator.push(context, MaterialPageRoute(builder: (context) {
+                    return ProviderScope(
+                      child: ProductDetail(
+                        model: model,
+                      ),
+                    );
+                  }));
+                });
+              },
               child: CategoryCell(
                 categoryItem: categoryData.items[index],
               ));
@@ -136,9 +141,16 @@ class CategoryList extends StatelessWidget {
 
     return Column(
       children: [
-        Text(
-          categoryData.categoryType,
-          style: Theme.of(context).textTheme.titleLarge,
+        Card(
+          color: Theme.of(context).dialogBackgroundColor,
+          child: Padding(
+            padding:
+                const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
+            child: Text(
+              categoryData.categoryType,
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+          ),
         ),
         needShrink ? listViewBuilder : Expanded(child: listViewBuilder)
       ],
@@ -154,52 +166,38 @@ class CategoryCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const padding = 8.0;
-    const borderRadius = 8.0;
-
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) {
-          return CategoryDetail();
-        }));
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.rectangle,
-          border: Border.all(color: Colors.grey, width: 2.0),
-          borderRadius: BorderRadius.circular(borderRadius),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(borderRadius),
-          child: SizedBox(
-            height: 150,
-            child: Row(
-              children: [
-                const Placeholder(
-                  fallbackHeight: 240,
-                  fallbackWidth: 100,
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: SizedBox(
+          height: 150,
+          child: Row(
+            children: [
+              const Placeholder(
+                fallbackHeight: 240,
+                fallbackWidth: 100,
+              ),
+              const SizedBox(
+                width: padding,
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      categoryItem.title,
+                      style: Theme.of(context).textTheme.titleLarge,
+                      softWrap: true,
+                    ),
+                    Text(
+                      'NT\$ ${categoryItem.price}',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ],
                 ),
-                const SizedBox(
-                  width: padding,
-                ),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        categoryItem.title,
-                        style: Theme.of(context).textTheme.titleLarge,
-                        softWrap: true,
-                      ),
-                      Text(
-                        'NT\$ ${categoryItem.price}',
-                        style: Theme.of(context).textTheme.titleLarge,
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ),
+              )
+            ],
           ),
         ),
       ),
