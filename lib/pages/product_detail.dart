@@ -14,34 +14,75 @@ class ProductDetail extends ConsumerWidget {
     return Scaffold(
       appBar: ref.watch(appBarProvider),
       body: Center(
-        child: Column(
-          children: [
-            const Placeholder(
-              fallbackHeight: 240,
-              fallbackWidth: 100,
-            ),
-            Column(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
               children: [
-                Text(
-                  model.description.title,
-                  style: Theme.of(context).textTheme.titleLarge,
+                const Placeholder(
+                  fallbackHeight: 240,
+                  fallbackWidth: 100,
                 ),
-                Text(
-                  model.description.uuid,
-                  style: Theme.of(context).textTheme.bodyMedium,
+                Column(
+                  children: [
+                    Text(
+                      model.description.title,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    Text(
+                      model.description.uuid,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    const SizedBox(
+                      height: 32,
+                    ),
+                    Text('NT\$ ${model.description.price}',
+                        style: Theme.of(context).textTheme.titleLarge)
+                  ],
                 ),
-                const SizedBox(
+                const Divider(
                   height: 32,
                 ),
-                Text('NT\$ ${model.description.price}',
-                    style: Theme.of(context).textTheme.titleLarge)
+                ProductSelection(sizeStocks: model.stocks),
+                const Divider(
+                  height: 32,
+                ),
+                Text(model.description.description),
+                const SizedBox(
+                  height: 16,
+                ),
+                Row(
+                  children: const [
+                    Text('細部說明'),
+                    SizedBox(
+                      width: 16,
+                    ),
+                    Expanded(
+                      child: Divider(
+                        color: Colors.black,
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
+                Text(model.description.detailDescription),
+                const SizedBox(
+                  height: 16,
+                ),
+                ...model.description.detailImages.map((_) {
+                  return const Padding(
+                    padding: EdgeInsets.only(top: 8, bottom: 8),
+                    child: Placeholder(
+                      fallbackHeight: 300,
+                      fallbackWidth: 450,
+                    ),
+                  );
+                }),
               ],
             ),
-            const Divider(
-              height: 32,
-            ),
-            ProductSelect(sizeStocks: model.stocks)
-          ],
+          ),
         ),
       ),
     );
@@ -74,16 +115,16 @@ class ProductSelectionNotifier extends StateNotifier<ProductSelectModel> {
   }
 }
 
-class ProductSelect extends ConsumerStatefulWidget {
-  const ProductSelect({super.key, required this.sizeStocks});
+class ProductSelection extends ConsumerStatefulWidget {
+  const ProductSelection({super.key, required this.sizeStocks});
 
   final List<ProductStockModel> sizeStocks;
 
   @override
-  ProductSelectState createState() => ProductSelectState();
+  ProductSelectionView createState() => ProductSelectionView();
 }
 
-class ProductSelectState extends ConsumerState<ProductSelect> {
+class ProductSelectionView extends ConsumerState<ProductSelection> {
   @override
   Widget build(context) {
     final viewModel = ref.watch(productSelectionProvider);
@@ -95,41 +136,75 @@ class ProductSelectState extends ConsumerState<ProductSelect> {
         ? widget.sizeStocks[viewModel.selectedSizeIndex]
             .stocks[viewModel.selectedColorIndex!].stock
         : null;
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          ColorSelection(colors: colors),
-          const SizedBox(
-            height: 16,
-          ),
-          SizeSelection(
-            sizes: widget.sizeStocks.map((stock) {
-              return stock.size;
-            }).toList(),
-          ),
-          const SizedBox(
-            height: 32,
-          ),
-          AmountSelection(maxStock: maxStock),
-        ],
-      ),
+    return Column(
+      children: [
+        ColorSelection(colors: colors),
+        const SizedBox(
+          height: 16,
+        ),
+        SizeSelection(
+          sizes: widget.sizeStocks.map((stock) {
+            return stock.size;
+          }).toList(),
+        ),
+        const SizedBox(
+          height: 32,
+        ),
+        AmountSelection(maxStock: maxStock),
+        const SizedBox(
+          height: 16,
+        ),
+        const ConfirmButton()
+      ],
     );
   }
 }
 
-class AmountSelection extends StatelessWidget {
-  AmountSelection({super.key, required this.maxStock});
+class ConfirmButton extends ConsumerWidget {
+  const ConfirmButton({
+    super.key,
+  });
 
+  @override
+  Widget build(context, ref) {
+    final isSelected =
+        ref.watch(productSelectionProvider).selectedColorIndex != null;
+    return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            onPressed: () {},
+            child: Text(isSelected ? '立即購買' : '請輸入品項')));
+  }
+}
+
+class AmountSelection extends StatefulWidget {
+  const AmountSelection({super.key, required this.maxStock});
+
+  final int? maxStock;
+
+  @override
+  State<AmountSelection> createState() => _AmountSelectionState();
+}
+
+class _AmountSelectionState extends State<AmountSelection> {
   final TextEditingController _controller = TextEditingController();
 
   final minAmount = 1;
   int currentAmount = 1;
-  int? maxStock;
 
   @override
   Widget build(BuildContext context) {
-    _controller.value = TextEditingValue(text: '$currentAmount');
+    if ((widget.maxStock ?? 0) > 0) {
+      _controller.value = TextEditingValue(text: '$currentAmount');
+    } else {
+      currentAmount = 1;
+      _controller.clear();
+    }
     return Row(
       children: [
         Text(
@@ -139,7 +214,7 @@ class AmountSelection extends StatelessWidget {
         const VerticalDivider(),
         ElevatedButton(
             onPressed: () {
-              if (maxStock == null) return;
+              if (widget.maxStock == null) return;
               currentAmount = max(currentAmount - 1, minAmount);
               _controller.value = TextEditingValue(text: '$currentAmount');
             },
@@ -149,8 +224,9 @@ class AmountSelection extends StatelessWidget {
         ),
         Expanded(
           child: TextField(
-            readOnly: maxStock == null,
+            readOnly: widget.maxStock == null,
             controller: _controller,
+            textAlign: TextAlign.center,
             keyboardType: TextInputType.number,
             decoration: const InputDecoration(
               labelText: '數量',
@@ -165,8 +241,8 @@ class AmountSelection extends StatelessWidget {
         ),
         ElevatedButton(
             onPressed: () {
-              if (maxStock == null) return;
-              currentAmount = min(currentAmount + 1, maxStock!);
+              if (widget.maxStock == null) return;
+              currentAmount = min(currentAmount + 1, widget.maxStock!);
               _controller.value = TextEditingValue(text: '$currentAmount');
             },
             child: const Text('+')),
