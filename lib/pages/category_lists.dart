@@ -4,7 +4,6 @@ import 'package:stylish_wen/data/category_model.dart';
 import 'package:stylish_wen/data/product_detail_model.dart';
 import 'package:stylish_wen/main.dart';
 import 'package:stylish_wen/model/api_service.dart';
-import 'package:stylish_wen/data/product_detail_model.dart';
 import 'package:stylish_wen/pages/product_detail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

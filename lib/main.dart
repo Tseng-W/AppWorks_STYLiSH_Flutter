@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:stylish_wen/bloc/hot_product_bloc.dart';
+import 'package:stylish_wen/model/api_service.dart';
 import 'package:stylish_wen/pages/category_lists.dart';
 import 'package:stylish_wen/pages/hot_product_list.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,10 +57,12 @@ class MyHomePageState extends ConsumerState<MyHomePage> {
           appBar: ref.watch(appBarProvider),
           body: Stack(
             children: [
-              const Column(
+              Column(
                 children: [
-                  HotProductsList(),
-                  CategoryLists(),
+                  BlocProvider(
+                      create: (_) => HotProductBloc(repo: MockAPIService()),
+                      child: const HotProductsList()),
+                  const CategoryLists(),
                 ],
               ),
               if (isLoading)

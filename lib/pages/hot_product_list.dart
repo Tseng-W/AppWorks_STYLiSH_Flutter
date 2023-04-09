@@ -1,57 +1,53 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:stylish_wen/data/hot_product_model.dart';
+import 'package:stylish_wen/bloc/hot_product_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-final hotProductViewModelProvider =
-    StateNotifierProvider<HotProductViewModel, List<HotProductModel>>(
-  (ref) => HotProductViewModel(),
-);
-
-class HotProductModel {
-  final int uuid;
-  final Image image;
-
-  HotProductModel(this.uuid, this.image);
-}
-
-class HotProductViewModel extends StateNotifier<List<HotProductModel>> {
-  HotProductViewModel() : super([]);
-  void fetchProductList() async {
-    await Future.delayed(const Duration(seconds: 2));
-    state = List.generate(
-        10,
-        (index) => HotProductModel(index,
-            const Image(image: AssetImage('assets/images/placeholder.png'))));
-  }
-}
-
-class HotProductsList extends ConsumerWidget {
+class HotProductsList extends StatelessWidget {
   const HotProductsList({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final list = ref.watch(hotProductViewModelProvider);
+  Widget build(BuildContext context) {
+    Widget buildList(List<HotProductModel> list) {
+      return SizedBox(
+        height: 200,
+        child: list.isEmpty
+            ? const Center(
+                child: CircularProgressIndicator(),
+              )
+            : ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: list.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.only(
+                        left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
+                    child: HotProduct(
+                      product: list[index],
+                    ),
+                  );
+                },
+              ),
+      );
+    }
 
-    ref.watch(hotProductViewModelProvider.notifier).fetchProductList();
-
-    return SizedBox(
-      height: 200,
-      child: list.isEmpty
-          ? const Center(
-              child: CircularProgressIndicator(),
-            )
-          : ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: list.length,
-              itemBuilder: (context, index) {
-                return Padding(
-                  padding: const EdgeInsets.only(
-                      left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
-                  child: HotProduct(
-                    product: list[index],
-                  ),
-                );
-              },
-            ),
+    return BlocBuilder<HotProductBloc, HotProductState>(
+      builder: (context, state) {
+        if (state is Success) {
+          return buildList(state.list);
+        } else if (state is Initial) {
+          context.read<HotProductBloc>().add(HotProductEvent.fetch);
+          return buildList(state.list);
+        } else if (state is Failure) {
+          return const Center(
+            child: Text('Something went wrong'),
+          );
+        } else {
+          return const Center(
+            child: Text('Something went wrong'),
+          );
+        }
+      },
     );
   }
 }

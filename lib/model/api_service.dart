@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:stylish_wen/data/category_model.dart';
+import 'package:stylish_wen/data/hot_product_model.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stylish_wen/data/product_detail_model.dart';
 
@@ -8,10 +9,15 @@ abstract class APIServiceProtocol {
   Future<ProductDetailModel> fetchProductDetail(String uuid);
 }
 
+abstract class HotProductAPIServiceProtocol {
+  Future<List<HotProductModel>> fetchHotProductList();
+}
+
 final apiServiceProvider =
     Provider<APIServiceProtocol>((ref) => MockAPIService());
 
-class MockAPIService extends APIServiceProtocol {
+class MockAPIService
+    implements APIServiceProtocol, HotProductAPIServiceProtocol {
   final mockListCount = 10;
 
   CategoryData generateMockList(String categoryTitle) {
@@ -66,5 +72,12 @@ class MockAPIService extends APIServiceProtocol {
             Stock(Colors.white, 4)
           ]),
         ]);
+  }
+
+  @override
+  Future<List<HotProductModel>> fetchHotProductList() async {
+    await Future.delayed(const Duration(seconds: 1));
+    return List.generate(mockListCount,
+        (index) => HotProductModel(index + 1, Image.asset('images/nope.jpg')));
   }
 }
