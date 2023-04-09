@@ -6,6 +6,7 @@ import 'package:stylish_wen/main.dart';
 import 'package:stylish_wen/model/api_service.dart';
 import 'package:stylish_wen/data/product_detail_model.dart';
 import 'package:stylish_wen/pages/product_detail.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 final categoryListViewModelProvider =
     StateNotifierProvider<CategoryListViewModel, List<CategoryData>>(
@@ -111,50 +112,52 @@ class CategoryList extends ConsumerWidget {
 
   @override
   Widget build(context, ref) {
-    final viewModel = ref.read(categoryListViewModelProvider.notifier);
-    final loadingStatus = ref.watch(LoadingStatusNotifierProvider.notifier);
+    return BlocBuilder<LoadingCubit, bool>(builder: ((context, state) {
+      final viewModel = ref.read(categoryListViewModelProvider.notifier);
 
-    final listViewBuilder = ListView.builder(
-        itemCount: categoryData.items.length,
-        shrinkWrap: needShrink,
-        itemBuilder: (context, index) {
-          return GestureDetector(
-              onTap: () {
-                loadingStatus.startLoading();
-                viewModel
-                    .fetchProductDetail(categoryData.items[index].uuid)
-                    .then((model) {
-                  loadingStatus.endLoading();
-                  Navigator.push(context, MaterialPageRoute(builder: (context) {
-                    return ProviderScope(
-                      child: ProductDetail(
-                        model: model,
-                      ),
-                    );
-                  }));
-                });
-              },
-              child: CategoryCell(
-                categoryItem: categoryData.items[index],
-              ));
-        });
+      final listViewBuilder = ListView.builder(
+          itemCount: categoryData.items.length,
+          shrinkWrap: needShrink,
+          itemBuilder: (context, index) {
+            return GestureDetector(
+                onTap: () {
+                  context.read<LoadingCubit>().startLoading();
+                  viewModel
+                      .fetchProductDetail(categoryData.items[index].uuid)
+                      .then((model) {
+                    context.read<LoadingCubit>().endLoading();
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) {
+                      return ProviderScope(
+                        child: ProductDetail(
+                          model: model,
+                        ),
+                      );
+                    }));
+                  });
+                },
+                child: CategoryCell(
+                  categoryItem: categoryData.items[index],
+                ));
+          });
 
-    return Column(
-      children: [
-        Card(
-          color: Theme.of(context).dialogBackgroundColor,
-          child: Padding(
-            padding:
-                const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
-            child: Text(
-              categoryData.categoryType,
-              style: Theme.of(context).textTheme.headlineSmall,
+      return Column(
+        children: [
+          Card(
+            color: Theme.of(context).dialogBackgroundColor,
+            child: Padding(
+              padding:
+                  const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
+              child: Text(
+                categoryData.categoryType,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
             ),
           ),
-        ),
-        needShrink ? listViewBuilder : Expanded(child: listViewBuilder)
-      ],
-    );
+          needShrink ? listViewBuilder : Expanded(child: listViewBuilder)
+        ],
+      );
+    }));
   }
 }
 

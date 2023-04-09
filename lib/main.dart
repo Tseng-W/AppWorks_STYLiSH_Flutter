@@ -2,21 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:stylish_wen/pages/category_lists.dart';
 import 'package:stylish_wen/pages/hot_product_list.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-final LoadingStatusNotifierProvider =
-    StateNotifierProvider<LoadingStatusNotifier, bool>(
-        (ref) => LoadingStatusNotifier());
+enum LoadingStatus { loading, loaded }
 
-class LoadingStatusNotifier extends StateNotifier<bool> {
-  LoadingStatusNotifier() : super(false);
-
-  void startLoading() {
-    state = true;
-  }
-
-  void endLoading() {
-    state = false;
-  }
+class LoadingCubit extends Cubit<bool> {
+  LoadingCubit() : super(false);
+  void startLoading() => emit(true);
+  void endLoading() => emit(false);
 }
 
 final appBarProvider = Provider((ref) => AppBar(
@@ -39,7 +32,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(colorSchemeSeed: Colors.blueGrey, useMaterial3: true),
-      home: const ProviderScope(child: MyHomePage()),
+      home: ProviderScope(
+          child: BlocProvider(
+              create: (_) => LoadingCubit(), child: const MyHomePage())),
     );
   }
 }
@@ -54,26 +49,29 @@ class MyHomePage extends ConsumerStatefulWidget {
 class MyHomePageState extends ConsumerState<MyHomePage> {
   @override
   Widget build(BuildContext context) {
-    final loading = ref.watch(LoadingStatusNotifierProvider);
-    return Scaffold(
-      appBar: ref.watch(appBarProvider),
-      body: Stack(
-        children: [
-          Column(
-            children: const [
-              HotProductsList(),
-              CategoryLists(),
+    return BlocBuilder<LoadingCubit, bool>(
+      builder: (context, isLoading) {
+        return Scaffold(
+          appBar: ref.watch(appBarProvider),
+          body: Stack(
+            children: [
+              const Column(
+                children: [
+                  HotProductsList(),
+                  CategoryLists(),
+                ],
+              ),
+              if (isLoading)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.grey.withOpacity(0.2),
+                    child: const Center(child: CircularProgressIndicator()),
+                  ),
+                ),
             ],
           ),
-          if (loading)
-            Positioned.fill(
-              child: Container(
-                color: Colors.grey.withOpacity(0.2),
-                child: const Center(child: CircularProgressIndicator()),
-              ),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
