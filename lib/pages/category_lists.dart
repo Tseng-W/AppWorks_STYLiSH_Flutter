@@ -1,55 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:stylish_wen/bloc/category_list_bloc.dart' as category;
+import 'package:stylish_wen/bloc/product_detail_bloc.dart';
 import 'package:stylish_wen/data/category_model.dart';
-import 'package:stylish_wen/data/product_detail_model.dart';
 import 'package:stylish_wen/main.dart';
 import 'package:stylish_wen/model/api_service.dart';
 import 'package:stylish_wen/pages/product_detail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:stylish_wen/bloc/product_detail_bloc.dart' as product;
 
-final categoryListViewModelProvider =
-    StateNotifierProvider<CategoryListViewModel, List<CategoryData>>(
-  (ref) => CategoryListViewModel(ref.read(apiServiceProvider)),
-);
-
-class CategoryListViewModel extends StateNotifier<List<CategoryData>> {
-  CategoryListViewModel(this._apiService) : super([]);
-
-  final APIServiceProtocol _apiService;
-
-  void fetchCategoryList() async {
-    await Future.delayed(const Duration(seconds: 1));
-    state = await _apiService.fetchCategoryList();
-  }
-
-  Future<ProductDetailModel> fetchProductDetail(String uuid) async {
-    await Future.delayed(const Duration(seconds: 1));
-    return await _apiService.fetchProductDetail(uuid);
-  }
-}
-
-class CategoryLists extends ConsumerWidget {
+class CategoryLists extends StatelessWidget {
   const CategoryLists({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final aspectRatio = size.width / size.height;
 
-    ref.read(categoryListViewModelProvider.notifier).fetchCategoryList();
-
-    return Consumer(builder: (context, ref, child) {
-      final list = ref.watch(categoryListViewModelProvider);
-
-      if (list.isEmpty) {
+    return BlocBuilder<category.CategoryListBloc, category.CategoryListState>(
+        builder: (context, state) {
+      if (state is category.Success) {
+        return BlocProvider(
+          create: (context) => ProductDetailBloc(repo: MockAPIService()),
+          child: (aspectRatio > 1)
+              ? WideCategoryLists(categoryLists: state.list)
+              : NarrowCategoryLists(categoryLists: state.list),
+        );
+      } else if (state is category.Initial) {
+        context
+            .read<category.CategoryListBloc>()
+            .add(category.CategoryListEvent.fetch);
+        return const Center(
+          child: CircularProgressIndicator(),
+        );
+      } else if (state is category.Failure) {
+        context
+            .read<category.CategoryListBloc>()
+            .add(category.CategoryListEvent.fetch);
+        return Center(
+          child: Text('${state.message} error.'),
+        );
+      } else {
         return const Center(
           child: CircularProgressIndicator(),
         );
       }
-
-      return (aspectRatio > 1)
-          ? WideCategoryLists(categoryLists: list)
-          : NarrowCategoryLists(categoryLists: list);
     });
   }
 }
@@ -87,6 +81,18 @@ class WideCategoryLists extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Expanded(
+        child: BlocListener(
+      bloc: BlocProvider.of<ProductDetailBloc>(context),
+      listener: (context, state) {
+        if (state is product.Success) {
+          context.read<LoadingCubit>().endLoading();
+          Navigator.push(context, MaterialPageRoute(builder: (context) {
+            return ProductDetail(
+              model: state.model,
+            );
+          }));
+        }
+      },
       child: Row(
           children: categoryLists
               .map((list) => Expanded(
@@ -95,11 +101,11 @@ class WideCategoryLists extends StatelessWidget {
                     needShrink: false,
                   )))
               .toList()),
-    );
+    ));
   }
 }
 
-class CategoryList extends ConsumerWidget {
+class CategoryList extends StatelessWidget {
   const CategoryList({
     super.key,
     required this.categoryData,
@@ -110,10 +116,9 @@ class CategoryList extends ConsumerWidget {
   final bool needShrink;
 
   @override
-  Widget build(context, ref) {
-    return BlocBuilder<LoadingCubit, bool>(builder: ((context, state) {
-      final viewModel = ref.read(categoryListViewModelProvider.notifier);
-
+  Widget build(context) {
+    return BlocBuilder<ProductDetailBloc, ProductDetailState>(
+        builder: ((context, state) {
       final listViewBuilder = ListView.builder(
           itemCount: categoryData.items.length,
           shrinkWrap: needShrink,
@@ -121,19 +126,9 @@ class CategoryList extends ConsumerWidget {
             return GestureDetector(
                 onTap: () {
                   context.read<LoadingCubit>().startLoading();
-                  viewModel
-                      .fetchProductDetail(categoryData.items[index].uuid)
-                      .then((model) {
-                    context.read<LoadingCubit>().endLoading();
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) {
-                      return ProviderScope(
-                        child: ProductDetail(
-                          model: model,
-                        ),
-                      );
-                    }));
-                  });
+                  context
+                      .read<ProductDetailBloc>()
+                      .add(categoryData.items[index].uuid);
                 },
                 child: CategoryCell(
                   categoryItem: categoryData.items[index],

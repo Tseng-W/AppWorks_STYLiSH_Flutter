@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:stylish_wen/data/category_model.dart';
 import 'package:stylish_wen/data/hot_product_model.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:stylish_wen/data/product_detail_model.dart';
+import 'package:http/http.dart' as http;
 
 abstract class APIServiceProtocol {
   Future<List<CategoryData>> fetchCategoryList();
@@ -13,11 +13,20 @@ abstract class HotProductAPIServiceProtocol {
   Future<List<HotProductModel>> fetchHotProductList();
 }
 
-final apiServiceProvider =
-    Provider<APIServiceProtocol>((ref) => MockAPIService());
+abstract class CategoryListAPIServiceProtocol {
+  Future<List<CategoryData>> fetchCategoryList();
+}
+
+abstract class ProductDetailAPIServiceProtocol {
+  Future<ProductDetailModel> fetchProductDetail(String uuid);
+}
 
 class MockAPIService
-    implements APIServiceProtocol, HotProductAPIServiceProtocol {
+    implements
+        APIServiceProtocol,
+        HotProductAPIServiceProtocol,
+        CategoryListAPIServiceProtocol,
+        ProductDetailAPIServiceProtocol {
   final mockListCount = 10;
 
   CategoryData generateMockList(String categoryTitle) {

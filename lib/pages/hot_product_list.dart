@@ -39,6 +39,7 @@ class HotProductsList extends StatelessWidget {
           context.read<HotProductBloc>().add(HotProductEvent.fetch);
           return buildList(state.list);
         } else if (state is Failure) {
+          context.read<HotProductBloc>().add(HotProductEvent.fetch);
           return const Center(
             child: Text('Something went wrong'),
           );

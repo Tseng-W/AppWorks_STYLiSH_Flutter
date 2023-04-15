@@ -1,18 +1,23 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:stylish_wen/main.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:stylish_wen/data/product_detail_model.dart';
+import 'package:stylish_wen/bloc/product_detail_selection_cubic.dart';
 
-class ProductDetail extends ConsumerWidget {
+class ProductDetail extends StatelessWidget {
   const ProductDetail({super.key, required this.model});
 
   final ProductDetailModel model;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: ref.watch(appBarProvider),
+      appBar: AppBar(
+          title: Image.asset(
+        'images/logo.png',
+        height: 36,
+        fit: BoxFit.contain,
+      )),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -43,7 +48,9 @@ class ProductDetail extends ConsumerWidget {
                 const Divider(
                   height: 32,
                 ),
-                ProductSelection(sizeStocks: model.stocks),
+                BlocProvider(
+                    create: (context) => ProductDetailSelectionCubit(),
+                    child: ProductSelection(sizeStocks: model.stocks)),
                 const Divider(
                   height: 32,
                 ),
@@ -51,8 +58,8 @@ class ProductDetail extends ConsumerWidget {
                 const SizedBox(
                   height: 16,
                 ),
-                Row(
-                  children: const [
+                const Row(
+                  children: [
                     Text('細部說明'),
                     SizedBox(
                       width: 16,
@@ -89,86 +96,61 @@ class ProductDetail extends ConsumerWidget {
   }
 }
 
-// TODO: Move this to a separate file
-class ProductSelectModel {
-  int selectedSizeIndex = 0;
-  int? selectedColorIndex;
-}
-
-final productSelectionProvider =
-    StateNotifierProvider<ProductSelectionNotifier, ProductSelectModel>(
-        (ref) => ProductSelectionNotifier());
-
-class ProductSelectionNotifier extends StateNotifier<ProductSelectModel> {
-  ProductSelectionNotifier() : super(ProductSelectModel());
-
-  void selectSize(int index) {
-    state = ProductSelectModel()
-      ..selectedSizeIndex = index
-      ..selectedColorIndex = null;
-  }
-
-  void selectColor(int index) {
-    state = ProductSelectModel()
-      ..selectedSizeIndex = state.selectedSizeIndex
-      ..selectedColorIndex = index;
-  }
-}
-
-class ProductSelection extends ConsumerStatefulWidget {
+class ProductSelection extends StatelessWidget {
   const ProductSelection({super.key, required this.sizeStocks});
-
   final List<ProductStockModel> sizeStocks;
 
   @override
-  ProductSelectionView createState() => ProductSelectionView();
-}
-
-class ProductSelectionView extends ConsumerState<ProductSelection> {
-  @override
   Widget build(context) {
-    final viewModel = ref.watch(productSelectionProvider);
-
-    final colors = widget.sizeStocks[viewModel.selectedSizeIndex].stocks
-        .map((e) => e.color)
-        .toList();
-    final maxStock = (viewModel.selectedColorIndex != null)
-        ? widget.sizeStocks[viewModel.selectedSizeIndex]
-            .stocks[viewModel.selectedColorIndex!].stock
-        : null;
-    return Column(
-      children: [
-        ColorSelection(colors: colors),
-        const SizedBox(
-          height: 16,
-        ),
-        SizeSelection(
-          sizes: widget.sizeStocks.map((stock) {
-            return stock.size;
-          }).toList(),
-        ),
-        const SizedBox(
-          height: 32,
-        ),
-        AmountSelection(maxStock: maxStock),
-        const SizedBox(
-          height: 16,
-        ),
-        const ConfirmButton()
-      ],
+    return BlocBuilder<ProductDetailSelectionCubit, ProductSelectionModel>(
+      builder: (context, viewModel) {
+        final colors = sizeStocks[viewModel.selectedSizeIndex]
+            .stocks
+            .map((e) => e.color)
+            .toList();
+        final maxStock = (viewModel.selectedColorIndex != null)
+            ? sizeStocks[viewModel.selectedSizeIndex]
+                .stocks[viewModel.selectedColorIndex!]
+                .stock
+            : null;
+        return Column(
+          children: [
+            ColorSelection(colors: colors),
+            const SizedBox(
+              height: 16,
+            ),
+            SizeSelection(
+              sizes: sizeStocks.map((stock) {
+                return stock.size;
+              }).toList(),
+            ),
+            const SizedBox(
+              height: 32,
+            ),
+            AmountSelection(maxStock: maxStock),
+            const SizedBox(
+              height: 16,
+            ),
+            ConfirmButton(
+              isSelected: viewModel.selectedColorIndex != null,
+            )
+          ],
+        );
+      },
     );
   }
 }
 
-class ConfirmButton extends ConsumerWidget {
-  const ConfirmButton({
+class ConfirmButton extends StatelessWidget {
+  bool isSelected;
+
+  ConfirmButton({
     super.key,
+    required this.isSelected,
   });
 
   @override
-  Widget build(context, ref) {
-    final isSelected =
-        ref.watch(productSelectionProvider).selectedColorIndex != null;
+  Widget build(context) {
     return SizedBox(
         width: double.infinity,
         child: ElevatedButton(
@@ -251,7 +233,7 @@ class _AmountSelectionState extends State<AmountSelection> {
   }
 }
 
-class SizeSelection extends ConsumerWidget {
+class SizeSelection extends StatelessWidget {
   const SizeSelection({
     super.key,
     required this.sizes,
@@ -260,74 +242,80 @@ class SizeSelection extends ConsumerWidget {
   final List<String> sizes;
 
   @override
-  Widget build(context, ref) {
-    final viewModel = ref.watch(productSelectionProvider);
-    return Row(
-      children: [
-        Text(
-          '尺寸',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const VerticalDivider(),
-        ...sizes.map((size) => TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor:
-                    sizes.indexOf(size) == viewModel.selectedSizeIndex
-                        ? Theme.of(context).primaryColorLight
-                        : null,
-              ),
-              onPressed: () {
-                ref
-                    .watch(productSelectionProvider.notifier)
-                    .selectSize(sizes.indexOf(size));
-              },
-              child: Text(size),
-            ))
-      ],
+  Widget build(context) {
+    return BlocBuilder<ProductDetailSelectionCubit, ProductSelectionModel>(
+      builder: (context, state) {
+        return Row(
+          children: [
+            Text(
+              '尺寸',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const VerticalDivider(),
+            ...sizes.map((size) => TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor:
+                        sizes.indexOf(size) == state.selectedSizeIndex
+                            ? Theme.of(context).primaryColorLight
+                            : null,
+                  ),
+                  onPressed: () {
+                    context
+                        .read<ProductDetailSelectionCubit>()
+                        .selectSize(sizes.indexOf(size));
+                  },
+                  child: Text(size),
+                ))
+          ],
+        );
+      },
     );
   }
 }
 
-class ColorSelection extends ConsumerWidget {
+class ColorSelection extends StatelessWidget {
   const ColorSelection({super.key, required this.colors});
 
   final List<Color> colors;
 
   @override
-  Widget build(context, ref) {
-    final viewModel = ref.watch(productSelectionProvider);
-    return Row(
-      children: [
-        Text(
-          '顏色',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const VerticalDivider(),
-        Wrap(
-          spacing: 8,
-          children: colors.map((color) {
-            final isSelected =
-                colors.indexOf(color) == viewModel.selectedColorIndex;
-            return GestureDetector(
-              onTap: () {
-                ref
-                    .watch(productSelectionProvider.notifier)
-                    .selectColor(colors.indexOf(color));
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                    color: color,
-                    border: Border.all(
-                        color: isSelected ? Colors.black : Colors.grey,
-                        width: 2),
-                    shape: BoxShape.rectangle),
-                width: 24,
-                height: 24,
-              ),
-            );
-          }).toList(),
-        )
-      ],
+  Widget build(context) {
+    return BlocBuilder<ProductDetailSelectionCubit, ProductSelectionModel>(
+      builder: (context, state) {
+        return Row(
+          children: [
+            Text(
+              '顏色',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            const VerticalDivider(),
+            Wrap(
+              spacing: 8,
+              children: colors.map((color) {
+                final isSelected =
+                    colors.indexOf(color) == state.selectedColorIndex;
+                return GestureDetector(
+                  onTap: () {
+                    context
+                        .read<ProductDetailSelectionCubit>()
+                        .selectColor(colors.indexOf(color));
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                        color: color,
+                        border: Border.all(
+                            color: isSelected ? Colors.black : Colors.grey,
+                            width: 2),
+                        shape: BoxShape.rectangle),
+                    width: 24,
+                    height: 24,
+                  ),
+                );
+              }).toList(),
+            )
+          ],
+        );
+      },
     );
   }
 }
