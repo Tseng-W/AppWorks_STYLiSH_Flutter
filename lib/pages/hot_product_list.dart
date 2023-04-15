@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:stylish_wen/data/hot_product_model.dart';
+import 'package:stylish_wen/data/hots.dart';
 import 'package:stylish_wen/bloc/hot_product_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:stylish_wen/data/product.dart';
 
 class HotProductsList extends StatelessWidget {
   const HotProductsList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    Widget buildList(List<HotProductModel> list) {
+    Widget buildList(List<Hots> list) {
+      final products = list.map((e) => e.products).expand((i) => i).toList();
       return SizedBox(
         height: 200,
         child: list.isEmpty
@@ -17,13 +19,13 @@ class HotProductsList extends StatelessWidget {
               )
             : ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount: list.length,
+                itemCount: products.length,
                 itemBuilder: (context, index) {
                   return Padding(
                     padding: const EdgeInsets.only(
                         left: 8.0, right: 8.0, top: 16.0, bottom: 16.0),
                     child: HotProduct(
-                      product: list[index],
+                      product: products[index],
                     ),
                   );
                 },
@@ -59,11 +61,31 @@ class HotProduct extends StatelessWidget {
     required this.product,
   });
 
-  final HotProductModel product;
+  final Product product;
 
   @override
   Widget build(BuildContext context) {
+    print('Wen - ${product.mainImage}');
     return ClipRRect(
-        borderRadius: BorderRadius.circular(8.0), child: const Placeholder());
+        borderRadius: BorderRadius.circular(8.0),
+        child: Image.network(
+          product.mainImage,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Center(
+              child: CircularProgressIndicator(
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                        loadingProgress.expectedTotalBytes!
+                    : null,
+              ),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            return Center(
+              child: Text('${error.toString()} Something went wrong'),
+            );
+          },
+        ));
   }
 }

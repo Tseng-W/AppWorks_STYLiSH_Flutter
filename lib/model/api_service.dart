@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:stylish_wen/data/category_model.dart';
-import 'package:stylish_wen/data/hot_product_model.dart';
+import 'package:stylish_wen/data/hots.dart';
 import 'package:stylish_wen/data/product_detail_model.dart';
 import 'package:http/http.dart' as http;
-
-abstract class APIServiceProtocol {
-  Future<List<CategoryData>> fetchCategoryList();
-  Future<ProductDetailModel> fetchProductDetail(String uuid);
-}
+import 'package:stylish_wen/model/request.dart';
 
 abstract class HotProductAPIServiceProtocol {
-  Future<List<HotProductModel>> fetchHotProductList();
+  Future<List<Hots>> fetchHotProductList();
+}
+
+class HotProductAPIService implements HotProductAPIServiceProtocol {
+  APIServiceProtocol repo = APIService();
+  @override
+  Future<List<Hots>> fetchHotProductList() async {
+    final response = await repo.fetchRequest(HostRequest());
+    return response;
+  }
 }
 
 abstract class CategoryListAPIServiceProtocol {
@@ -21,12 +27,46 @@ abstract class ProductDetailAPIServiceProtocol {
   Future<ProductDetailModel> fetchProductDetail(String uuid);
 }
 
+abstract class APIServiceProtocol {
+  Future<T> fetchRequest<T>(Request<T> request);
+}
+
+class APIService implements APIServiceProtocol {
+  @override
+  Future<T> fetchRequest<T>(Request<T> request) {
+    final uri = request.makeRequest();
+    Future<http.Response> response;
+    switch (request.method) {
+      case RequestMethod.GET:
+        response = http.get(uri);
+        break;
+      case RequestMethod.POST:
+        response = http.post(uri);
+        break;
+      default:
+        throw Exception('Not implemented');
+    }
+
+    return response.then((response) {
+      if (response.statusCode == 200) {
+        try {
+          return request.decode(response.body);
+        } catch (e) {
+          if (e is FormatException) {
+            throw Exception('Format error');
+          } else {
+            throw Exception('Unexpected error');
+          }
+        }
+      } else {
+        throw Exception('Failed to load hots');
+      }
+    });
+  }
+}
+
 class MockAPIService
-    implements
-        APIServiceProtocol,
-        HotProductAPIServiceProtocol,
-        CategoryListAPIServiceProtocol,
-        ProductDetailAPIServiceProtocol {
+    implements CategoryListAPIServiceProtocol, ProductDetailAPIServiceProtocol {
   final mockListCount = 10;
 
   CategoryData generateMockList(String categoryTitle) {
@@ -81,12 +121,5 @@ class MockAPIService
             Stock(Colors.white, 4)
           ]),
         ]);
-  }
-
-  @override
-  Future<List<HotProductModel>> fetchHotProductList() async {
-    await Future.delayed(const Duration(seconds: 1));
-    return List.generate(mockListCount,
-        (index) => HotProductModel(index + 1, Image.asset('images/nope.jpg')));
   }
 }

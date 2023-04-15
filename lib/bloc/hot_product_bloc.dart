@@ -1,12 +1,12 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:stylish_wen/data/hot_product_model.dart';
+import 'package:stylish_wen/data/hots.dart';
 import 'package:stylish_wen/model/api_service.dart';
 
 abstract class HotProductState extends Equatable {}
 
 class Success extends HotProductState {
-  final List<HotProductModel> list;
+  final List<Hots> list;
 
   Success(this.list);
 
@@ -15,7 +15,7 @@ class Success extends HotProductState {
 }
 
 class Initial extends HotProductState {
-  final List<HotProductModel> list = [];
+  final List<Hots> list = [];
 
   Initial();
 

@@ -57,7 +57,8 @@ class MyHomePageState extends State<MyHomePage> {
               Column(
                 children: [
                   BlocProvider(
-                      create: (_) => HotProductBloc(repo: MockAPIService()),
+                      create: (_) =>
+                          HotProductBloc(repo: HotProductAPIService()),
                       child: const HotProductsList()),
                   BlocProvider(
                       create: (_) => CategoryListBloc(repo: MockAPIService()),
