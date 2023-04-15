@@ -3,6 +3,7 @@ import 'package:stylish_wen/data/hots.dart';
 import 'package:stylish_wen/bloc/hot_product_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:stylish_wen/data/product.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class HotProductsList extends StatelessWidget {
   const HotProductsList({super.key});
@@ -65,27 +66,24 @@ class HotProduct extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print('Wen - ${product.mainImage}');
     return ClipRRect(
         borderRadius: BorderRadius.circular(8.0),
-        child: Image.network(
-          product.mainImage,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Center(
-              child: CircularProgressIndicator(
-                value: loadingProgress.expectedTotalBytes != null
-                    ? loadingProgress.cumulativeBytesLoaded /
-                        loadingProgress.expectedTotalBytes!
-                    : null,
-              ),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) {
-            return Center(
-              child: Text('${error.toString()} Something went wrong'),
-            );
-          },
+        child: CachedNetworkImage(
+          imageUrl: product.mainImage,
+          progressIndicatorBuilder: (context, url, progress) => _sizedContainer(
+            CircularProgressIndicator(
+              value: progress.progress,
+            ),
+          ),
+          errorWidget: (context, url, error) => const Icon(Icons.error),
         ));
+  }
+
+  Widget _sizedContainer(Widget child) {
+    return SizedBox(
+      width: 100,
+      height: 200,
+      child: Center(child: child),
+    );
   }
 }

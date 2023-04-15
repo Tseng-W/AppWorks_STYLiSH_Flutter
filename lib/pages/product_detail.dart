@@ -58,8 +58,8 @@ class ProductDetail extends StatelessWidget {
                 const SizedBox(
                   height: 16,
                 ),
-                const Row(
-                  children: [
+                Row(
+                  children: const [
                     Text('細部說明'),
                     SizedBox(
                       width: 16,
