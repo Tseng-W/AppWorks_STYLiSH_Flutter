@@ -1,9 +1,6 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:stylish_wen/data/hots.dart';
-
-const host = 'api.appworks-school.tw';
-const apiVersion = '1.0';
+import 'package:dio/dio.dart';
 
 // ignore: constant_identifier_names
 enum RequestMethod { GET, POST }
@@ -12,11 +9,9 @@ abstract class Request<T> {
   late RequestMethod method;
   late String endpoint;
   late Map<String, dynamic> queries;
-  Uri makeRequest() {
-    return Uri.https(host, '/api/$apiVersion/$endpoint', queries);
-  }
+  late ResponseType type;
 
-  T decode(String json);
+  T decode(Map<dynamic, dynamic> json);
 }
 
 class HostRequest extends Request {
@@ -36,9 +31,13 @@ class HostRequest extends Request {
   }
 
   @override
-  List<Hots> decode(String json) {
-    Map<String, dynamic> map = jsonDecode(json);
-    Iterable l = map['data'];
+  ResponseType get type {
+    return ResponseType.json;
+  }
+
+  @override
+  List<Hots> decode(Map<dynamic, dynamic> json) {
+    Iterable l = json['data'];
     return List<Hots>.from(l.map((model) => Hots.fromJson(model)));
   }
 }

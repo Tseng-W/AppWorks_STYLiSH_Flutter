@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:stylish_wen/data/hots.dart';
 import 'package:stylish_wen/model/api_service.dart';
+import 'dart:developer' as developer;
 
 abstract class HotProductState extends Equatable {}
 
@@ -43,6 +44,8 @@ class HotProductBloc extends Bloc<HotProductEvent, HotProductState> {
           final list = await repo.fetchHotProductList();
           emit(Success(list));
         } catch (e) {
+          developer.log(e.toString(),
+              name: 'stylish_wen.hot_product_bloc.api_service');
           emit(Failure(e.toString()));
         }
       }

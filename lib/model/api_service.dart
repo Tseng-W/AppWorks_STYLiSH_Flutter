@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:convert';
 import 'package:stylish_wen/data/category_model.dart';
 import 'package:stylish_wen/data/hots.dart';
 import 'package:stylish_wen/data/product_detail_model.dart';
-import 'package:http/http.dart' as http;
 import 'package:stylish_wen/model/request.dart';
+import 'package:dio/dio.dart';
 
 abstract class HotProductAPIServiceProtocol {
   Future<List<Hots>> fetchHotProductList();
@@ -32,25 +31,38 @@ abstract class APIServiceProtocol {
 }
 
 class APIService implements APIServiceProtocol {
+  static final shared = APIService();
+
+  final Dio dio = Dio();
+
+  APIService() {
+    dio.options.baseUrl = 'https://api.appworks-school.tw/api/1.0';
+    dio.options.connectTimeout = const Duration(seconds: 5);
+    dio.options.receiveTimeout = const Duration(seconds: 3);
+  }
+
   @override
   Future<T> fetchRequest<T>(Request<T> request) {
-    final uri = request.makeRequest();
-    Future<http.Response> response;
+    Future<Response<Map>> response;
     switch (request.method) {
       case RequestMethod.GET:
-        response = http.get(uri);
+        response = dio.get(request.endpoint, queryParameters: request.queries);
         break;
       case RequestMethod.POST:
-        response = http.post(uri);
+        response = dio.post(request.endpoint,
+            queryParameters: request.queries,
+            options: Options(responseType: request.type));
         break;
       default:
         throw Exception('Not implemented');
     }
-
     return response.then((response) {
       if (response.statusCode == 200) {
         try {
-          return request.decode(response.body);
+          if (response.data == null) {
+            throw Exception('Data unexpected found nil');
+          }
+          return request.decode(response.data!);
         } catch (e) {
           if (e is FormatException) {
             throw Exception('Format error');
