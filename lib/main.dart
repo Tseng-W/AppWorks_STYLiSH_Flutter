@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:stylish_wen/bloc/category_list_bloc.dart';
+import 'package:stylish_wen/bloc/product_detail_bloc.dart';
 import 'package:stylish_wen/bloc/hot_product_bloc.dart';
 import 'package:stylish_wen/model/api_service.dart';
 import 'package:stylish_wen/pages/category_lists.dart';
@@ -61,8 +61,10 @@ class MyHomePageState extends State<MyHomePage> {
                           HotProductBloc(repo: HotProductAPIService()),
                       child: const HotProductsList()),
                   BlocProvider(
-                      create: (_) => CategoryListBloc(repo: MockAPIService()),
-                      child: const CategoryLists()),
+                    create: (context) =>
+                        ProductDetailBloc(repo: MockAPIService()),
+                    child: const CategoryLists(),
+                  ),
                 ],
               ),
               if (isLoading)

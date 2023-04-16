@@ -32,10 +32,10 @@ class Failure extends ProductDetailState {
   List<Object?> get props => [message];
 }
 
-class ProductDetailBloc extends Bloc<String, ProductDetailState> {
+class ProductDetailBloc extends Bloc<int, ProductDetailState> {
   ProductDetailAPIServiceProtocol repo;
   ProductDetailBloc({required this.repo}) : super(Initial()) {
-    on<String>((event, emit) async {
+    on<int>((event, emit) async {
       try {
         final model = await repo.fetchProductDetail(event);
         emit(Success(model));

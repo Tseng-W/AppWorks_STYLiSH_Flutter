@@ -82,6 +82,13 @@ class Product {
   }
 }
 
+class PagedProduct {
+  final List<Product> products;
+  final int? paging;
+
+  PagedProduct(this.products, this.paging);
+}
+
 class Color {
   final String name;
   final String code;

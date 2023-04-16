@@ -1,5 +1,5 @@
-import 'dart:convert';
 import 'package:stylish_wen/data/hots.dart';
+import 'package:stylish_wen/data/product.dart';
 import 'package:dio/dio.dart';
 
 // ignore: constant_identifier_names
@@ -39,5 +39,35 @@ class HostRequest extends Request {
   List<Hots> decode(Map<dynamic, dynamic> json) {
     Iterable l = json['data'];
     return List<Hots>.from(l.map((model) => Hots.fromJson(model)));
+  }
+}
+
+enum ProductListType { all, women, men, accessories }
+
+class ProductListRequest implements Request {
+  ProductListRequest(this.listType) {
+    endpoint = '/products/${listType.toString().split('.').last}';
+  }
+
+  ProductListType listType;
+
+  @override
+  late String endpoint;
+
+  @override
+  RequestMethod method = RequestMethod.GET;
+
+  @override
+  Map<String, dynamic> queries = {};
+
+  @override
+  ResponseType type = ResponseType.json;
+
+  @override
+  PagedProduct decode(Map json) {
+    final paging = json['paging'];
+    Iterable l = json['data'];
+    final list = List<Product>.from(l.map((model) => Product.fromJson(model)));
+    return PagedProduct(list, paging);
   }
 }

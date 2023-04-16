@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:stylish_wen/data/category_model.dart';
 import 'package:stylish_wen/data/hots.dart';
+import 'package:stylish_wen/data/product.dart';
 import 'package:stylish_wen/data/product_detail_model.dart';
 import 'package:stylish_wen/model/request.dart';
 import 'package:dio/dio.dart';
@@ -19,11 +19,20 @@ class HotProductAPIService implements HotProductAPIServiceProtocol {
 }
 
 abstract class CategoryListAPIServiceProtocol {
-  Future<List<CategoryData>> fetchCategoryList();
+  Future<PagedProduct> fetchCategoryList(ProductListType type);
+}
+
+class CategoryListAPIService implements CategoryListAPIServiceProtocol {
+  APIServiceProtocol repo = APIService();
+  @override
+  Future<PagedProduct> fetchCategoryList(ProductListType type) async {
+    final response = await repo.fetchRequest(ProductListRequest(type));
+    return response;
+  }
 }
 
 abstract class ProductDetailAPIServiceProtocol {
-  Future<ProductDetailModel> fetchProductDetail(String uuid);
+  Future<ProductDetailModel> fetchProductDetail(int uuid);
 }
 
 abstract class APIServiceProtocol {
@@ -77,34 +86,11 @@ class APIService implements APIServiceProtocol {
   }
 }
 
-class MockAPIService
-    implements CategoryListAPIServiceProtocol, ProductDetailAPIServiceProtocol {
+class MockAPIService implements ProductDetailAPIServiceProtocol {
   final mockListCount = 10;
 
-  CategoryData generateMockList(String categoryTitle) {
-    return CategoryData(
-        categoryTitle,
-        List.generate(
-            mockListCount,
-            (index) => CategoryItem(
-                'UNIQLO 特級級輕羽絨外套',
-                index + 1,
-                Image.asset('images/nope.jpg'),
-                categoryTitle + index.toString())));
-  }
-
   @override
-  Future<List<CategoryData>> fetchCategoryList() async {
-    await Future.delayed(const Duration(seconds: 1));
-    return [
-      generateMockList('女裝'),
-      generateMockList('男裝'),
-      generateMockList('飾品'),
-    ];
-  }
-
-  @override
-  Future<ProductDetailModel> fetchProductDetail(String uuid) async {
+  Future<ProductDetailModel> fetchProductDetail(int uuid) async {
     await Future.delayed(const Duration(seconds: 1));
 
     return ProductDetailModel(
