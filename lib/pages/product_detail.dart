@@ -1,13 +1,15 @@
 import 'dart:math';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:stylish_wen/data/product_detail_model.dart';
+import 'package:stylish_wen/data/product.dart' as p;
 import 'package:stylish_wen/bloc/product_detail_selection_cubic.dart';
+import 'package:stylish_wen/extensions/color_extension.dart';
 
 class ProductDetail extends StatelessWidget {
-  const ProductDetail({super.key, required this.model});
+  const ProductDetail({super.key, required this.product});
 
-  final ProductDetailModel model;
+  final p.Product product;
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +33,17 @@ class ProductDetail extends StatelessWidget {
                 Column(
                   children: [
                     Text(
-                      model.description.title,
+                      product.title,
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     Text(
-                      model.description.uuid,
+                      product.id.toString(),
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
                     const SizedBox(
                       height: 32,
                     ),
-                    Text('NT\$ ${model.description.price}',
+                    Text('NT\$ ${product.price}',
                         style: Theme.of(context).textTheme.titleLarge)
                   ],
                 ),
@@ -50,16 +52,20 @@ class ProductDetail extends StatelessWidget {
                 ),
                 BlocProvider(
                     create: (context) => ProductDetailSelectionCubit(),
-                    child: ProductSelection(sizeStocks: model.stocks)),
+                    child: ProductSelection(
+                      colors: product.colors,
+                      sizeStocks: product.variants,
+                      sizes: product.sizes,
+                    )),
                 const Divider(
                   height: 32,
                 ),
-                Text(model.description.description),
+                Text(product.description),
                 const SizedBox(
                   height: 16,
                 ),
-                Row(
-                  children: const [
+                const Row(
+                  children: [
                     Text('細部說明'),
                     SizedBox(
                       width: 16,
@@ -74,17 +80,14 @@ class ProductDetail extends StatelessWidget {
                 const SizedBox(
                   height: 16,
                 ),
-                Text(model.description.detailDescription),
+                Text(product.story),
                 const SizedBox(
                   height: 16,
                 ),
-                ...model.description.detailImages.map((_) {
-                  return const Padding(
-                    padding: EdgeInsets.only(top: 8, bottom: 8),
-                    child: Placeholder(
-                      fallbackHeight: 300,
-                      fallbackWidth: 450,
-                    ),
+                ...product.images.map((url) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8, bottom: 8),
+                    child: CachedNetworkImage(imageUrl: url),
                   );
                 }),
               ],
@@ -97,21 +100,27 @@ class ProductDetail extends StatelessWidget {
 }
 
 class ProductSelection extends StatelessWidget {
-  const ProductSelection({super.key, required this.sizeStocks});
-  final List<ProductStockModel> sizeStocks;
+  const ProductSelection(
+      {super.key,
+      required this.sizeStocks,
+      required this.sizes,
+      required this.colors});
+  final List<String> sizes;
+  final List<p.Variant> sizeStocks;
+  final List<p.Color> colors;
 
   @override
   Widget build(context) {
     return BlocBuilder<ProductDetailSelectionCubit, ProductSelectionModel>(
       builder: (context, viewModel) {
-        final colors = sizeStocks[viewModel.selectedSizeIndex]
-            .stocks
-            .map((e) => e.color)
-            .toList();
+        final selectedSize = sizes[viewModel.selectedSizeIndex];
         final maxStock = (viewModel.selectedColorIndex != null)
-            ? sizeStocks[viewModel.selectedSizeIndex]
-                .stocks[viewModel.selectedColorIndex!]
-                .stock
+            ? sizeStocks.firstWhere((variant) {
+                final colorMatched = variant.colorCode ==
+                    colors[viewModel.selectedColorIndex!].code;
+                final sizeMatched = variant.size == selectedSize;
+                return colorMatched && sizeMatched;
+              }).stock
             : null;
         return Column(
           children: [
@@ -120,9 +129,7 @@ class ProductSelection extends StatelessWidget {
               height: 16,
             ),
             SizeSelection(
-              sizes: sizeStocks.map((stock) {
-                return stock.size;
-              }).toList(),
+              sizes: sizes,
             ),
             const SizedBox(
               height: 32,
@@ -276,7 +283,7 @@ class SizeSelection extends StatelessWidget {
 class ColorSelection extends StatelessWidget {
   const ColorSelection({super.key, required this.colors});
 
-  final List<Color> colors;
+  final List<p.Color> colors;
 
   @override
   Widget build(context) {
@@ -302,7 +309,7 @@ class ColorSelection extends StatelessWidget {
                   },
                   child: Container(
                     decoration: BoxDecoration(
-                        color: color,
+                        color: color.code.toColor(),
                         border: Border.all(
                             color: isSelected ? Colors.black : Colors.grey,
                             width: 2),

@@ -71,3 +71,29 @@ class ProductListRequest implements Request {
     return PagedProduct(list, paging);
   }
 }
+
+class ProductDetailRequest implements Request {
+  ProductDetailRequest(this.id) {
+    endpoint = '/products/details';
+    queries = {'id': id};
+  }
+
+  int id;
+
+  @override
+  late String endpoint;
+
+  @override
+  RequestMethod method = RequestMethod.GET;
+
+  @override
+  late Map<String, dynamic> queries;
+
+  @override
+  ResponseType type = ResponseType.json;
+
+  @override
+  Product decode(Map json) {
+    return Product.fromJson(json['data']);
+  }
+}

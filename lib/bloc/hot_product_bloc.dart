@@ -2,7 +2,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:stylish_wen/data/hots.dart';
 import 'package:stylish_wen/model/api_service.dart';
-import 'dart:developer' as developer;
+import 'package:stylish_wen/model/request.dart';
+import 'package:logger/logger.dart';
 
 abstract class HotProductState extends Equatable {}
 
@@ -36,16 +37,15 @@ class Failure extends HotProductState {
 enum HotProductEvent { fetch }
 
 class HotProductBloc extends Bloc<HotProductEvent, HotProductState> {
-  HotProductAPIServiceProtocol repo;
+  APIServiceProtocol repo;
   HotProductBloc({required this.repo}) : super(Initial()) {
     on<HotProductEvent>((event, emit) async {
       if (event == HotProductEvent.fetch) {
         try {
-          final list = await repo.fetchHotProductList();
+          final list = await repo.fetchRequest(HostRequest());
           emit(Success(list));
         } catch (e) {
-          developer.log(e.toString(),
-              name: 'stylish_wen.hot_product_bloc.api_service');
+          Logger().d(e.toString());
           emit(Failure(e.toString()));
         }
       }

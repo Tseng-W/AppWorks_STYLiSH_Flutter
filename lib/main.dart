@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:stylish_wen/bloc/product_detail_bloc.dart';
 import 'package:stylish_wen/bloc/hot_product_bloc.dart';
-import 'package:stylish_wen/model/api_service.dart';
+import 'package:stylish_wen/bloc/singleton_cubit.dart';
 import 'package:stylish_wen/pages/category_lists.dart';
 import 'package:stylish_wen/pages/hot_product_list.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,7 +15,8 @@ class LoadingCubit extends Cubit<bool> {
 }
 
 void main() {
-  runApp(const MyApp());
+  runApp(BlocProvider(
+      create: (context) => SingletonCubit(), child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -57,12 +58,13 @@ class MyHomePageState extends State<MyHomePage> {
               Column(
                 children: [
                   BlocProvider(
-                      create: (_) =>
-                          HotProductBloc(repo: HotProductAPIService()),
+                      create: (_) => HotProductBloc(
+                          repo:
+                              context.read<SingletonCubit>().state.apiService),
                       child: const HotProductsList()),
                   BlocProvider(
-                    create: (context) =>
-                        ProductDetailBloc(repo: MockAPIService()),
+                    create: (context) => ProductDetailBloc(
+                        repo: context.read<SingletonCubit>().state.apiService),
                     child: const CategoryLists(),
                   ),
                 ],

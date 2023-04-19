@@ -2,9 +2,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:stylish_wen/bloc/category_list_bloc.dart';
 import 'package:stylish_wen/bloc/product_detail_bloc.dart' as detail;
+import 'package:stylish_wen/bloc/singleton_cubit.dart';
 import 'package:stylish_wen/data/product.dart';
 import 'package:stylish_wen/main.dart';
-import 'package:stylish_wen/model/api_service.dart';
 import 'package:stylish_wen/model/request.dart';
 import 'package:stylish_wen/pages/product_detail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -25,7 +25,7 @@ class CategoryLists extends StatelessWidget {
           context.read<LoadingCubit>().endLoading();
           Navigator.push(context, MaterialPageRoute(builder: (context) {
             return ProductDetail(
-              model: state.model,
+              product: state.model,
             );
           }));
         }
@@ -57,7 +57,7 @@ class NarrowCategoryLists extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) => CategoryListBloc(
-        repo: CategoryListAPIService(),
+        repo: context.read<SingletonCubit>().state.apiService,
         type: productType,
       ),
       child: Expanded(
@@ -126,7 +126,8 @@ class WideCategoryLists extends StatelessWidget {
             (type) {
               return BlocProvider(
                 create: (context) => CategoryListBloc(
-                    repo: CategoryListAPIService(), type: type),
+                    repo: context.read<SingletonCubit>().state.apiService,
+                    type: type),
                 child: Expanded(
                   child: BlocBuilder<CategoryListBloc, CategoryListState>(
                     builder: (context, state) {

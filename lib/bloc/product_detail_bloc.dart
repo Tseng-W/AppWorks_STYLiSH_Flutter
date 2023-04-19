@@ -1,12 +1,13 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:stylish_wen/data/product_detail_model.dart';
+import 'package:stylish_wen/data/product.dart';
 import 'package:stylish_wen/model/api_service.dart';
+import 'package:stylish_wen/model/request.dart';
 
 abstract class ProductDetailState extends Equatable {}
 
 class Success extends ProductDetailState {
-  final ProductDetailModel model;
+  final Product model;
 
   Success(this.model);
 
@@ -15,7 +16,7 @@ class Success extends ProductDetailState {
 }
 
 class Initial extends ProductDetailState {
-  final ProductDetailModel? model = null;
+  final Product? model = null;
 
   Initial();
 
@@ -33,13 +34,13 @@ class Failure extends ProductDetailState {
 }
 
 class ProductDetailBloc extends Bloc<int, ProductDetailState> {
-  ProductDetailAPIServiceProtocol repo;
+  APIServiceProtocol repo;
   ProductDetailBloc({required this.repo}) : super(Initial()) {
-    on<int>((event, emit) async {
+    on<int>((productId, emit) async {
       try {
-        final model = await repo.fetchProductDetail(event);
-        emit(Success(model));
+        final model = await repo.fetchRequest(ProductDetailRequest(productId));
         emit(Initial());
+        emit(Success(model));
       } catch (e) {
         emit(Failure(e.toString()));
       }
