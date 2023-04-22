@@ -1,16 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:stylish_wen/bloc/category_list_bloc.dart';
-import 'package:stylish_wen/bloc/product_detail_bloc.dart' as detail;
 import 'package:stylish_wen/bloc/singleton_cubit.dart';
 import 'package:stylish_wen/data/product.dart';
 import 'package:stylish_wen/model/request.dart';
-import 'package:stylish_wen/pages/product_detail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:stylish_wen/bloc/product_detail_bloc.dart' as product;
 import 'package:go_router/go_router.dart';
-
-import '../bloc/loading_cubit.dart';
 
 class CategoryLists extends StatelessWidget {
   const CategoryLists({super.key});
@@ -207,7 +202,7 @@ class CategoryCell extends StatelessWidget {
     const padding = 8.0;
     return GestureDetector(
       onTap: () {
-        context.push("/detail/${product.id}");
+        context.pushNamed('detail', params: {'productId': '${product.id}'});
       },
       child: Card(
         child: Padding(

@@ -20,10 +20,9 @@ class ProductDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-            title: Image.asset(
-          'images/logo.png',
-          height: 36,
-          fit: BoxFit.contain,
+            title: Text(
+          '產品詳情',
+          style: Theme.of(context).appBarTheme.titleTextStyle,
         )),
         body: BlocProvider(
             create: (context) => ProductDetailBloc(
@@ -185,9 +184,9 @@ class ProductSelection extends StatelessWidget {
 }
 
 class ConfirmButton extends StatelessWidget {
-  bool isSelected;
+  final bool isSelected;
 
-  ConfirmButton({
+  const ConfirmButton({
     super.key,
     required this.isSelected,
   });
@@ -202,7 +201,9 @@ class ConfirmButton extends StatelessWidget {
                 borderRadius: BorderRadius.circular(8),
               ),
             ),
-            onPressed: () {},
+            onPressed: () {
+              context.goNamed('cart');
+            },
             child: Text(isSelected ? '立即購買' : '請輸入品項')));
   }
 }

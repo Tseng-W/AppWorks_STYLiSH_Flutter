@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:stylish_wen/bloc/singleton_cubit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:stylish_wen/bloc/loading_cubit.dart';
-import 'package:stylish_wen/pages/home.dart';
 import 'routes.dart';
 
 void main() {
