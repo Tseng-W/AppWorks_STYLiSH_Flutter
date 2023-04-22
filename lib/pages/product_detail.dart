@@ -2,97 +2,133 @@ import 'dart:math';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:stylish_wen/bloc/product_detail_bloc.dart';
+import 'package:stylish_wen/bloc/singleton_cubit.dart';
 import 'package:stylish_wen/data/product.dart' as p;
 import 'package:stylish_wen/bloc/product_detail_selection_cubic.dart';
 import 'package:stylish_wen/extensions/color_extension.dart';
 
+import '../model/api_service.dart';
+
 class ProductDetail extends StatelessWidget {
-  const ProductDetail({super.key, required this.product});
+  const ProductDetail({super.key, required this.productId});
+
+  final int productId;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+            title: Image.asset(
+          'images/logo.png',
+          height: 36,
+          fit: BoxFit.contain,
+        )),
+        body: BlocProvider(
+            create: (context) => ProductDetailBloc(
+                repo: context.read<SingletonCubit>().state.apiService),
+            // context.read<SingletonCubit>().state.apiService
+            child: BlocBuilder<ProductDetailBloc, ProductDetailState>(
+                builder: (context, state) {
+              switch (state.runtimeType) {
+                case Success:
+                  return ProductDetailContainer(
+                      product: (state as Success).model);
+                case Failure:
+                  context.go("/");
+                  return Center(
+                      child: Text((state as Failure).message,
+                          style: Theme.of(context).textTheme.bodyMedium));
+                default:
+                  context.read<ProductDetailBloc>().add(productId);
+                  return const Center(child: CircularProgressIndicator());
+              }
+            })));
+  }
+}
+
+class ProductDetailContainer extends StatelessWidget {
+  const ProductDetailContainer({
+    super.key,
+    required this.product,
+  });
 
   final p.Product product;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-          title: Image.asset(
-        'images/logo.png',
-        height: 36,
-        fit: BoxFit.contain,
-      )),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            CachedNetworkImage(
+              imageUrl: product.mainImage,
+              progressIndicatorBuilder: (context, url, progress) =>
+                  CircularProgressIndicator(value: progress.progress),
+            ),
+            Column(
               children: [
-                const Placeholder(
-                  fallbackHeight: 240,
-                  fallbackWidth: 100,
+                Text(
+                  product.title,
+                  style: Theme.of(context).textTheme.titleLarge,
                 ),
-                Column(
-                  children: [
-                    Text(
-                      product.title,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    Text(
-                      product.id.toString(),
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    const SizedBox(
-                      height: 32,
-                    ),
-                    Text('NT\$ ${product.price}',
-                        style: Theme.of(context).textTheme.titleLarge)
-                  ],
+                Text(
+                  product.id.toString(),
+                  style: Theme.of(context).textTheme.bodyMedium,
                 ),
-                const Divider(
+                const SizedBox(
                   height: 32,
                 ),
-                BlocProvider(
-                    create: (context) => ProductDetailSelectionCubit(),
-                    child: ProductSelection(
-                      colors: product.colors,
-                      sizeStocks: product.variants,
-                      sizes: product.sizes,
-                    )),
-                const Divider(
-                  height: 32,
-                ),
-                Text(product.description),
-                const SizedBox(
-                  height: 16,
-                ),
-                const Row(
-                  children: [
-                    Text('細部說明'),
-                    SizedBox(
-                      width: 16,
-                    ),
-                    Expanded(
-                      child: Divider(
-                        color: Colors.black,
-                      ),
-                    )
-                  ],
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                Text(product.story),
-                const SizedBox(
-                  height: 16,
-                ),
-                ...product.images.map((url) {
-                  return Padding(
-                    padding: const EdgeInsets.only(top: 8, bottom: 8),
-                    child: CachedNetworkImage(imageUrl: url),
-                  );
-                }),
+                Text('NT\$ ${product.price}',
+                    style: Theme.of(context).textTheme.titleLarge)
               ],
             ),
-          ),
+            const Divider(
+              height: 32,
+            ),
+            BlocProvider(
+                create: (context) => ProductDetailSelectionCubit(),
+                child: ProductSelection(
+                  colors: product.colors,
+                  sizeStocks: product.variants,
+                  sizes: product.sizes,
+                )),
+            const Divider(
+              height: 32,
+            ),
+            Text(product.description),
+            const SizedBox(
+              height: 16,
+            ),
+            const Row(
+              children: [
+                Text('細部說明'),
+                SizedBox(
+                  width: 16,
+                ),
+                Expanded(
+                  child: Divider(
+                    color: Colors.black,
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            Text(product.story),
+            const SizedBox(
+              height: 16,
+            ),
+            ...product.images.map((url) {
+              return Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 8),
+                child: CachedNetworkImage(imageUrl: url),
+              );
+            }),
+          ],
         ),
       ),
     );

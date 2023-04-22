@@ -4,11 +4,13 @@ import 'package:stylish_wen/bloc/category_list_bloc.dart';
 import 'package:stylish_wen/bloc/product_detail_bloc.dart' as detail;
 import 'package:stylish_wen/bloc/singleton_cubit.dart';
 import 'package:stylish_wen/data/product.dart';
-import 'package:stylish_wen/main.dart';
 import 'package:stylish_wen/model/request.dart';
 import 'package:stylish_wen/pages/product_detail.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:stylish_wen/bloc/product_detail_bloc.dart' as product;
+import 'package:go_router/go_router.dart';
+
+import '../bloc/loading_cubit.dart';
 
 class CategoryLists extends StatelessWidget {
   const CategoryLists({super.key});
@@ -18,30 +20,17 @@ class CategoryLists extends StatelessWidget {
     final size = MediaQuery.of(context).size;
     final aspectRatio = size.width / size.height;
 
-    return BlocListener(
-      bloc: BlocProvider.of<detail.ProductDetailBloc>(context),
-      listener: (context, state) {
-        if (state is product.Success) {
-          context.read<LoadingCubit>().endLoading();
-          Navigator.push(context, MaterialPageRoute(builder: (context) {
-            return ProductDetail(
-              product: state.model,
-            );
-          }));
-        }
-      },
-      child: (aspectRatio > 1)
-          ? const WideCategoryLists(
-              productTypes: [
-                ProductListType.women,
-                ProductListType.men,
-                ProductListType.accessories
-              ],
-            )
-          : const NarrowCategoryLists(
-              productType: ProductListType.all,
-            ),
-    );
+    return (aspectRatio > 1)
+        ? const WideCategoryLists(
+            productTypes: [
+              ProductListType.women,
+              ProductListType.men,
+              ProductListType.accessories
+            ],
+          )
+        : const NarrowCategoryLists(
+            productType: ProductListType.all,
+          );
   }
 }
 
@@ -179,42 +168,32 @@ class CategoryList extends StatelessWidget {
 
   @override
   Widget build(context) {
-    return BlocBuilder<detail.ProductDetailBloc, detail.ProductDetailState>(
-        builder: ((context, state) {
-      final listViewBuilder = ListView.builder(
-          itemCount: pagedProduct.products.length,
-          shrinkWrap: needShrink,
-          physics: needShrink ? const NeverScrollableScrollPhysics() : null,
-          itemBuilder: (context, index) {
-            return GestureDetector(
-                onTap: () {
-                  context.read<LoadingCubit>().startLoading();
-                  context
-                      .read<detail.ProductDetailBloc>()
-                      .add(pagedProduct.products[index].id);
-                },
-                child: CategoryCell(
-                  product: pagedProduct.products[index],
-                ));
-          });
+    final listViewBuilder = ListView.builder(
+        itemCount: pagedProduct.products.length,
+        shrinkWrap: needShrink,
+        physics: needShrink ? const NeverScrollableScrollPhysics() : null,
+        itemBuilder: (context, index) {
+          return CategoryCell(
+            product: pagedProduct.products[index],
+          );
+        });
 
-      return Column(
-        children: [
-          Card(
-            color: Theme.of(context).dialogBackgroundColor,
-            child: Padding(
-              padding:
-                  const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
-              child: Text(
-                pagedProduct.products.first.category,
-                style: Theme.of(context).textTheme.headlineSmall,
-              ),
+    return Column(
+      children: [
+        Card(
+          color: Theme.of(context).dialogBackgroundColor,
+          child: Padding(
+            padding:
+                const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
+            child: Text(
+              pagedProduct.products.first.category,
+              style: Theme.of(context).textTheme.headlineSmall,
             ),
           ),
-          needShrink ? listViewBuilder : Expanded(child: listViewBuilder)
-        ],
-      );
-    }));
+        ),
+        needShrink ? listViewBuilder : Expanded(child: listViewBuilder)
+      ],
+    );
   }
 }
 
@@ -226,41 +205,46 @@ class CategoryCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const padding = 8.0;
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: SizedBox(
-          height: 150,
-          child: Row(
-            children: [
-              CachedNetworkImage(
-                imageUrl: product.mainImage,
-                progressIndicatorBuilder: (context, url, progress) =>
-                    CircularProgressIndicator(
-                  value: progress.progress,
+    return GestureDetector(
+      onTap: () {
+        context.push("/detail/${product.id}");
+      },
+      child: Card(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: SizedBox(
+            height: 150,
+            child: Row(
+              children: [
+                CachedNetworkImage(
+                  imageUrl: product.mainImage,
+                  progressIndicatorBuilder: (context, url, progress) =>
+                      CircularProgressIndicator(
+                    value: progress.progress,
+                  ),
                 ),
-              ),
-              const SizedBox(
-                width: padding,
-              ),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      product.title,
-                      style: Theme.of(context).textTheme.titleLarge,
-                      softWrap: true,
-                    ),
-                    Text(
-                      'NT\$ ${product.price}',
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                  ],
+                const SizedBox(
+                  width: padding,
                 ),
-              )
-            ],
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        product.title,
+                        style: Theme.of(context).textTheme.titleLarge,
+                        softWrap: true,
+                      ),
+                      Text(
+                        'NT\$ ${product.price}',
+                        style: Theme.of(context).textTheme.titleLarge,
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         ),
       ),

@@ -38,8 +38,8 @@ class ProductDetailBloc extends Bloc<int, ProductDetailState> {
   ProductDetailBloc({required this.repo}) : super(Initial()) {
     on<int>((productId, emit) async {
       try {
-        final model = await repo.fetchRequest(ProductDetailRequest(productId));
         emit(Initial());
+        final model = await repo.fetchRequest(ProductDetailRequest(productId));
         emit(Success(model));
       } catch (e) {
         emit(Failure(e.toString()));
