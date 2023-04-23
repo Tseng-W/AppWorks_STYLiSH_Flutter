@@ -2,6 +2,9 @@ import Flutter
 import TPDirect
 import UIKit
 
+let CONST_TEST_TAPPAY_ID: Int32 = 12348
+let CONST_TEST_TAPPAY_APP_KEY = "app_pa1pQcKoY22IlnSXq5m5WP5jFKzoRG58VEXpT7wU62ud7mMbDOGzCYIlzzLF"
+
 @UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
     override func application(
@@ -13,12 +16,14 @@ import UIKit
         let factory = FLNativeViewFactory(messenger: register!.messenger())
         self.registrar(forPlugin: "<TapPayView>")?.register(factory, withId: "<TapPayView>")
 
-        let appID: Int32 = 123456
-        TPDSetup.setWithAppId(appID, withAppKey: "APP_KEY", with: TPDServerType.sandBox)
+        let appID: Int32 = CONST_TEST_TAPPAY_ID
+        TPDSetup.setWithAppId(appID, withAppKey: CONST_TEST_TAPPAY_APP_KEY, with: TPDServerType.sandBox)
 
         return super.application(application, didFinishLaunchingWithOptions: launchOptions)
     }
 }
+
+import SnapKit
 
 class FLNativeViewFactory: NSObject, FlutterPlatformViewFactory {
     private var messenger: FlutterBinaryMessenger
@@ -61,12 +66,99 @@ class FLNativeView: NSObject, FlutterPlatformView {
     }
 
     func createNativeView(view _view: UIView){
-        _view.backgroundColor = UIColor.blue
-        let nativeLabel = UILabel()
-        nativeLabel.text = "Native text from iOS"
-        nativeLabel.textColor = UIColor.white
-        nativeLabel.textAlignment = .center
-        nativeLabel.frame = CGRect(x: 0, y: 0, width: 180, height: 48.0)
-        _view.addSubview(nativeLabel)
+        let tapPayView = TapPayView()
+        _view.addSubview(tapPayView)
+        tapPayView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview()
+            make.height.equalTo(400)
+        }
+
+        let button = UIButton()
+        _view.addSubview(button)
+        button.snp.makeConstraints { make in
+            make.top.equalTo(tapPayView.snp.bottom)
+            make.leading.bottom.trailing.equalToSuperview()
+        }
+        button.addTarget(self, action: #selector(someTap(_:)), for: .touchUpInside)
+        button.backgroundColor = .systemGreen
+        button.setTitle("Click me!!!", for: .normal)
+    }
+
+    @IBAction func someTap(_ button: Any) {
+        _view.backgroundColor = UIColor(red: .random(in: 0...1), green: .random(in: 0...1), blue: .random(in: 0...1), alpha: 1)
+    }
+}
+
+class TapPayView: UIView {
+    private let cardView: UIView = .init()
+    private let payButton: UIButton = .init()
+    private var tpdForm: TPDForm?
+    private var tpdCard: TPDCard?
+
+    convenience init() {
+        self.init(frame: .zero)
+    }
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupUI()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    private func setupUI() {
+        backgroundColor = .white
+        addSubview(cardView)
+        addSubview(payButton)
+
+        cardView.snp.makeConstraints { make in
+            make.top.leading.trailing.equalToSuperview().inset(8)
+            make.height.greaterThanOrEqualTo(200)
+        }
+        payButton.snp.makeConstraints { make in
+            make.top.equalTo(cardView.snp.bottom).offset(8)
+            make.bottom.equalToSuperview().inset(8)
+            make.leading.trailing.equalTo(cardView)
+        }
+
+        guard let tpdForm = TPDForm.setup(withContainer: cardView) else { fatalError() }
+        tpdCard = TPDCard.setup(tpdForm)
+        tpdForm.setOkColor(.systemGreen)
+        tpdForm.setNormalColor(.black)
+        tpdForm.setErrorColor(.systemRed)
+        tpdForm.onFormUpdated({ [weak self] status in
+            self?.payButton.isEnabled = status.isCanGetPrime()
+            self?.payButton.alpha = status.isCanGetPrime() ? 1.0 : 0.25
+        })
+
+        payButton.setTitle("Click to pay", for: .normal)
+        payButton.backgroundColor = .blue
+        payButton.isEnabled = false
+        payButton.alpha = 0.25
+
+        payButton.addTarget(self, action: #selector(tapPay(_:)), for: .touchUpInside)
+    }
+
+    @IBAction func tapPay(_ action: Any) {
+        backgroundColor = UIColor.init(red: .random(in: 0...1), green: .random(in: 0...1), blue: .random(in: 0...1), alpha: 1)
+
+        tpdCard?.onSuccessCallback({ primes, cardInfo, cardIdentifier, wtf in
+            print("Success::prime: \(primes), info: \(cardInfo), identifier: \(cardIdentifier), wtf: \(wtf)")
+        })
+        .onFailureCallback({ status, message in
+            print("Failure:: status:\(status), message:\(message)")
+        }).getPrime()
+    }
+
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        let view = super.hitTest(point, with: event)
+        if let textField = view as? UITextField {
+            textField.becomeFirstResponder()
+        } else if let button = view as? UIButton {
+
+        }
+        return view
     }
 }
