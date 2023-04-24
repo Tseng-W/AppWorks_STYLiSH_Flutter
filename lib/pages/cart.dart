@@ -13,18 +13,14 @@ class Cart extends StatelessWidget {
         '購物車',
         style: Theme.of(context).appBarTheme.titleTextStyle,
       )),
-      body: Padding(
-        padding: const EdgeInsets.all(8.0),
+      body: const Padding(
+        padding: EdgeInsets.all(8.0),
         child: SingleChildScrollView(
             child: Column(children: [
-          const SizedBox(height: 20),
-          const Text('Total: \$0'),
-          const SizedBox(height: 20),
-          SizedBox(
-            width: MediaQuery.of(context).size.width,
-            height: 400,
-            child: const TapPayView(),
-          )
+          SizedBox(height: 20),
+          Text('Total: \$0'),
+          SizedBox(height: 20),
+          TapPayView()
         ])),
       ),
     );
@@ -40,7 +36,9 @@ class TapPayView extends StatefulWidget {
 
 class _TapPayViewState extends State<TapPayView> {
   final messageChannel =
-      const BasicMessageChannel('TapPayView/message', StandardMessageCodec());
+      const BasicMessageChannel('tapPayResponse', StringCodec());
+
+  String responseMessage = '';
 
   @override
   void initState() {
@@ -48,16 +46,33 @@ class _TapPayViewState extends State<TapPayView> {
 
     messageChannel.setMessageHandler((message) async {
       Logger().i(message);
+      if (message != null) {
+        setState(() {
+          responseMessage = message;
+        });
+      }
       return "Received: $message";
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return const UiKitView(
-        viewType: '<TapPayView>',
-        layoutDirection: TextDirection.ltr,
-        creationParams: {},
-        creationParamsCodec: StandardMessageCodec());
+    return Center(
+      child: Column(
+        children: [
+          Text(responseMessage,
+              style: Theme.of(context).textTheme.displayMedium),
+          SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: 450,
+            child: const UiKitView(
+                viewType: '<TapPayView>',
+                layoutDirection: TextDirection.ltr,
+                creationParams: {},
+                creationParamsCodec: StandardMessageCodec()),
+          ),
+        ],
+      ),
+    );
   }
 }

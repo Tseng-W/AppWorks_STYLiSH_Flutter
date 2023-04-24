@@ -60,7 +60,7 @@ class FLNativeView: NSObject, FlutterPlatformView {
         // iOS views can be created here
         createNativeView(
             view: _view,
-            messageChannel: FlutterBasicMessageChannel(name: "TapPayView/message", binaryMessenger: messenger!, codec: FlutterStringCodec.sharedInstance())
+            messageChannel: FlutterBasicMessageChannel(name: "tapPayResponse", binaryMessenger: messenger!, codec: FlutterStringCodec.sharedInstance())
         )
     }
 
