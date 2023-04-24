@@ -14,7 +14,7 @@ let CONST_TEST_TAPPAY_APP_KEY = "app_pa1pQcKoY22IlnSXq5m5WP5jFKzoRG58VEXpT7wU62u
         GeneratedPluginRegistrant.register(with: self)
         weak var register = self.registrar(forPlugin: "TapPayViewPlugin")
         let factory = FLNativeViewFactory(messenger: register!.messenger())
-        self.registrar(forPlugin: "<TapPayView>")?.register(factory, withId: "<TapPayView>")
+        self.registrar(forPlugin: "<TapPayView>")?.register(factory, withId:  "<TapPayView>")
 
         let appID: Int32 = CONST_TEST_TAPPAY_ID
         TPDSetup.setWithAppId(appID, withAppKey: CONST_TEST_TAPPAY_APP_KEY, with: TPDServerType.sandBox)
@@ -58,30 +58,22 @@ class FLNativeView: NSObject, FlutterPlatformView {
         _view = UIView()
         super.init()
         // iOS views can be created here
-        createNativeView(view: _view)
+        createNativeView(
+            view: _view,
+            messageChannel: FlutterBasicMessageChannel(name: "TapPayView/message", binaryMessenger: messenger!, codec: FlutterStringCodec.sharedInstance())
+        )
     }
 
     func view() -> UIView {
         return _view
     }
 
-    func createNativeView(view _view: UIView){
-        let tapPayView = TapPayView()
+    func createNativeView(view _view: UIView, messageChannel: FlutterBasicMessageChannel){
+        let tapPayView = TapPayView(messageChannel: messageChannel)
         _view.addSubview(tapPayView)
         tapPayView.snp.makeConstraints { make in
-            make.top.leading.trailing.equalToSuperview()
-            make.height.equalTo(400)
+            make.edges.equalToSuperview()
         }
-
-        let button = UIButton()
-        _view.addSubview(button)
-        button.snp.makeConstraints { make in
-            make.top.equalTo(tapPayView.snp.bottom)
-            make.leading.bottom.trailing.equalToSuperview()
-        }
-        button.addTarget(self, action: #selector(someTap(_:)), for: .touchUpInside)
-        button.backgroundColor = .systemGreen
-        button.setTitle("Click me!!!", for: .normal)
     }
 
     @IBAction func someTap(_ button: Any) {
@@ -94,13 +86,11 @@ class TapPayView: UIView {
     private let payButton: UIButton = .init()
     private var tpdForm: TPDForm?
     private var tpdCard: TPDCard?
+    private let messageChannel: FlutterBasicMessageChannel
 
-    convenience init() {
-        self.init(frame: .zero)
-    }
-
-    override init(frame: CGRect) {
-        super.init(frame: frame)
+    init(messageChannel: FlutterBasicMessageChannel) {
+        self.messageChannel = messageChannel
+        super.init(frame: .zero)
         setupUI()
     }
 
@@ -144,11 +134,18 @@ class TapPayView: UIView {
     @IBAction func tapPay(_ action: Any) {
         backgroundColor = UIColor.init(red: .random(in: 0...1), green: .random(in: 0...1), blue: .random(in: 0...1), alpha: 1)
 
-        tpdCard?.onSuccessCallback({ primes, cardInfo, cardIdentifier, wtf in
-            print("Success::prime: \(primes), info: \(cardInfo), identifier: \(cardIdentifier), wtf: \(wtf)")
+        tpdCard?.onSuccessCallback({ primes, cardInfo, cardIdentifier, merchantReferenceInfo in
+            print("Success::prime: \(primes), info: \(cardInfo), identifier: \(cardIdentifier), merchantReferenceInfo: \(merchantReferenceInfo)")
+            self.messageChannel.sendMessage(primes) { response in
+                print("iOS send response: \(response)")
+            }
         })
         .onFailureCallback({ status, message in
             print("Failure:: status:\(status), message:\(message)")
+//            self.messageChannel.sendMessage(3) { response in
+            self.messageChannel.sendMessage(message) { response in
+                print("iOS send response: \(response)")
+            }
         }).getPrime()
     }
 
@@ -157,7 +154,7 @@ class TapPayView: UIView {
         if let textField = view as? UITextField {
             textField.becomeFirstResponder()
         } else if let button = view as? UIButton {
-
+            tapPay(button)
         }
         return view
     }
