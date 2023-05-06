@@ -1,6 +1,7 @@
 import Flutter
 import TPDirect
 import UIKit
+import GoogleMaps
 
 let CONST_TEST_TAPPAY_ID: Int32 = 12348
 let CONST_TEST_TAPPAY_APP_KEY = "app_pa1pQcKoY22IlnSXq5m5WP5jFKzoRG58VEXpT7wU62ud7mMbDOGzCYIlzzLF"
@@ -11,6 +12,10 @@ let CONST_TEST_TAPPAY_APP_KEY = "app_pa1pQcKoY22IlnSXq5m5WP5jFKzoRG58VEXpT7wU62u
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        if let resourceURL = Bundle.main.url(forResource: "googleMapAPI.apikey", withExtension: nil),
+           let googleAPIKey = try? String(String(contentsOf: resourceURL)).trimmingCharacters(in: .whitespacesAndNewlines) {
+            GMSServices.provideAPIKey(googleAPIKey)
+        }
         GeneratedPluginRegistrant.register(with: self)
         weak var register = self.registrar(forPlugin: "TapPayViewPlugin")
         let factory = FLNativeViewFactory(messenger: register!.messenger())

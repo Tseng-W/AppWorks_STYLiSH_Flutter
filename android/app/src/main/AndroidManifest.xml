@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.stylish_wen">
-   <application
+    <application
         android:label="stylish_wen"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
@@ -30,5 +30,7 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <meta-data android:name="com.google.android.geo.API_KEY"
+        android:value="AIzaSyDnLWsidXkUydY0WXRM_jZ6C6i0brFdXuo"/>
     </application>
 </manifest>

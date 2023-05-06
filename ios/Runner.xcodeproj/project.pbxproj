@@ -9,7 +9,12 @@
 /* Begin PBXBuildFile section */
 		1498D2341E8E89220040F4C2 /* GeneratedPluginRegistrant.m in Sources */ = {isa = PBXBuildFile; fileRef = 1498D2331E8E89220040F4C2 /* GeneratedPluginRegistrant.m */; };
 		3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */ = {isa = PBXBuildFile; fileRef = 3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */; };
-		71CB224029F2595900112A71 /* TPDirect.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 71CB223F29F2595900112A71 /* TPDirect.xcframework */; };
+		711EBC702A01367100F93F7B /* googleMapAPI.apikey in Resources */ = {isa = PBXBuildFile; fileRef = 711EBC6F2A01367100F93F7B /* googleMapAPI.apikey */; };
+		711EBC712A013DCE00F93F7B /* TPDirect.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 71CB223F29F2595900112A71 /* TPDirect.xcframework */; };
+		711EBC722A013DCE00F93F7B /* TPDirect.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 71CB223F29F2595900112A71 /* TPDirect.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		711EBC742A013E2A00F93F7B /* WebKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 711EBC732A013E2A00F93F7B /* WebKit.framework */; };
+		711EBC762A013E3900F93F7B /* SafariServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 711EBC752A013E3800F93F7B /* SafariServices.framework */; };
+		711EBC782A013E5E00F93F7B /* PassKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 711EBC772A013E5E00F93F7B /* PassKit.framework */; };
 		74858FAF1ED2DC5600515810 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74858FAE1ED2DC5600515810 /* AppDelegate.swift */; };
 		97C146FC1CF9000F007C117D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FA1CF9000F007C117D /* Main.storyboard */; };
 		97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 97C146FD1CF9000F007C117D /* Assets.xcassets */; };
@@ -24,6 +29,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				711EBC722A013DCE00F93F7B /* TPDirect.xcframework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -37,6 +43,10 @@
 		20548D4A56FA1B546060907F /* Pods_Runner.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Runner.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		3062C5BF5DFAB7362B4F0210 /* Pods-Runner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"; sourceTree = "<group>"; };
 		3B3967151E833CAA004F5970 /* AppFrameworkInfo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = AppFrameworkInfo.plist; path = Flutter/AppFrameworkInfo.plist; sourceTree = "<group>"; };
+		711EBC6F2A01367100F93F7B /* googleMapAPI.apikey */ = {isa = PBXFileReference; lastKnownFileType = text; path = googleMapAPI.apikey; sourceTree = "<group>"; };
+		711EBC732A013E2A00F93F7B /* WebKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WebKit.framework; path = System/Library/Frameworks/WebKit.framework; sourceTree = SDKROOT; };
+		711EBC752A013E3800F93F7B /* SafariServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SafariServices.framework; path = System/Library/Frameworks/SafariServices.framework; sourceTree = SDKROOT; };
+		711EBC772A013E5E00F93F7B /* PassKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = PassKit.framework; path = System/Library/Frameworks/PassKit.framework; sourceTree = SDKROOT; };
 		71CB223F29F2595900112A71 /* TPDirect.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = TPDirect.xcframework; sourceTree = "<group>"; };
 		74858FAD1ED2DC5600515810 /* Runner-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "Runner-Bridging-Header.h"; sourceTree = "<group>"; };
 		74858FAE1ED2DC5600515810 /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -56,14 +66,25 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				71CB224029F2595900112A71 /* TPDirect.xcframework in Frameworks */,
+				711EBC712A013DCE00F93F7B /* TPDirect.xcframework in Frameworks */,
+				711EBC782A013E5E00F93F7B /* PassKit.framework in Frameworks */,
 				9CD997FC6900C2B8A67EE558 /* Pods_Runner.framework in Frameworks */,
+				711EBC762A013E3900F93F7B /* SafariServices.framework in Frameworks */,
+				711EBC742A013E2A00F93F7B /* WebKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		711EBC6D2A01364200F93F7B /* Keys */ = {
+			isa = PBXGroup;
+			children = (
+				711EBC6F2A01367100F93F7B /* googleMapAPI.apikey */,
+			);
+			path = Keys;
+			sourceTree = "<group>";
+		};
 		9740EEB11CF90186004384FC /* Flutter */ = {
 			isa = PBXGroup;
 			children = (
@@ -97,6 +118,7 @@
 		97C146F01CF9000F007C117D /* Runner */ = {
 			isa = PBXGroup;
 			children = (
+				711EBC6D2A01364200F93F7B /* Keys */,
 				97C146FA1CF9000F007C117D /* Main.storyboard */,
 				97C146FD1CF9000F007C117D /* Assets.xcassets */,
 				97C146FF1CF9000F007C117D /* LaunchScreen.storyboard */,
@@ -122,6 +144,9 @@
 		B835B2605359AE129D074430 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				711EBC772A013E5E00F93F7B /* PassKit.framework */,
+				711EBC752A013E3800F93F7B /* SafariServices.framework */,
+				711EBC732A013E2A00F93F7B /* WebKit.framework */,
 				71CB223F29F2595900112A71 /* TPDirect.xcframework */,
 				20548D4A56FA1B546060907F /* Pods_Runner.framework */,
 			);
@@ -143,6 +168,7 @@
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				08501F326D7699970AA64444 /* [CP] Embed Pods Frameworks */,
+				06A8F63E151B0AA01A2C3FA1 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -193,6 +219,7 @@
 			files = (
 				97C147011CF9000F007C117D /* LaunchScreen.storyboard in Resources */,
 				3B3967161E833CAA004F5970 /* AppFrameworkInfo.plist in Resources */,
+				711EBC702A01367100F93F7B /* googleMapAPI.apikey in Resources */,
 				97C146FE1CF9000F007C117D /* Assets.xcassets in Resources */,
 				97C146FC1CF9000F007C117D /* Main.storyboard in Resources */,
 			);
@@ -201,6 +228,23 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		06A8F63E151B0AA01A2C3FA1 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		08501F326D7699970AA64444 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;

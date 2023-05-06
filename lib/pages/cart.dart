@@ -13,7 +13,7 @@ class Cart extends StatelessWidget {
         '購物車',
         style: Theme.of(context).appBarTheme.titleTextStyle,
       )),
-      body: const Padding(
+      body: Padding(
         padding: EdgeInsets.all(8.0),
         child: SingleChildScrollView(
             child: Column(children: [

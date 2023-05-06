@@ -9,8 +9,6 @@ import 'package:stylish_wen/data/product.dart' as p;
 import 'package:stylish_wen/bloc/product_detail_selection_cubic.dart';
 import 'package:stylish_wen/extensions/color_extension.dart';
 
-import '../model/api_service.dart';
-
 class ProductDetail extends StatelessWidget {
   const ProductDetail({super.key, required this.productId});
 
@@ -101,7 +99,7 @@ class ProductDetailContainer extends StatelessWidget {
             const SizedBox(
               height: 16,
             ),
-            const Row(
+            Row(
               children: [
                 Text('細部說明'),
                 SizedBox(

@@ -2,6 +2,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:stylish_wen/pages/cart.dart';
 import 'package:stylish_wen/pages/home.dart';
+import 'package:stylish_wen/pages/product_shop.dart';
 import 'package:stylish_wen/pages/product_detail.dart';
 
 final GoRouter router = GoRouter(routes: [
@@ -26,6 +27,13 @@ final GoRouter router = GoRouter(routes: [
       return ProductDetail(
         productId: int.parse(productId),
       );
+    },
+  ),
+  GoRoute(
+    path: '/shopMap',
+    name: 'shopMap',
+    builder: (context, state) {
+      return const ShopMapView();
     },
   )
 ]);

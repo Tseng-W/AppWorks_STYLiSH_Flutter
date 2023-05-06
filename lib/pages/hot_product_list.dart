@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:stylish_wen/data/hots.dart';
 import 'package:stylish_wen/bloc/hot_product_bloc.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -66,17 +67,21 @@ class HotProduct extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-        borderRadius: BorderRadius.circular(8.0),
-        child: CachedNetworkImage(
-          imageUrl: product.mainImage,
-          progressIndicatorBuilder: (context, url, progress) => _sizedContainer(
-            CircularProgressIndicator(
-              value: progress.progress,
+    return GestureDetector(
+      onTap: () => context.pushNamed('shopMap'),
+      child: ClipRRect(
+          borderRadius: BorderRadius.circular(8.0),
+          child: CachedNetworkImage(
+            imageUrl: product.mainImage,
+            progressIndicatorBuilder: (context, url, progress) =>
+                _sizedContainer(
+              CircularProgressIndicator(
+                value: progress.progress,
+              ),
             ),
-          ),
-          errorWidget: (context, url, error) => const Icon(Icons.error),
-        ));
+            errorWidget: (context, url, error) => const Icon(Icons.error),
+          )),
+    );
   }
 
   Widget _sizedContainer(Widget child) {
