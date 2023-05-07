@@ -30,7 +30,7 @@ class MyApp extends StatelessWidget {
       routerConfig: goRouter,
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.grey,
+        primarySwatch: Colors.blueGrey,
       ),
     );
   }
@@ -43,13 +43,7 @@ class MyHomePage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final items = ref.watch(mainRouteProvider);
     return Scaffold(
-      appBar: AppBar(
-          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          title: Image.asset(
-            'images/logo.png',
-            height: 36,
-            fit: BoxFit.contain,
-          )),
+      appBar: AppBar(title: const Text('Flutter WebRTC Demo')),
       body: ListView.builder(
           shrinkWrap: true,
           padding: const EdgeInsets.all(0.0),
