@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:stylish_wen/Pages/device_enumeration.dart';
 import 'package:stylish_wen/Pages/get_user_media.dart';
 import 'main.dart';
 
@@ -28,5 +29,10 @@ final goRouter = GoRouter(
       name: 'getUserMedia',
       builder: (context, state) => const GetUserMediaPage(),
     ),
+    GoRoute(
+      path: '/deviceEnumerationView',
+      name: 'deviceEnumerationView',
+      builder: (context, state) => const DeviceEnumerationView(),
+    )
   ],
 );

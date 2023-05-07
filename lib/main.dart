@@ -12,6 +12,11 @@ final mainRouteProvider = Provider(
           context.pushNamed('getUserMedia');
         },
       ),
+      RouteItem(
+          title: 'DeviceEnumerationView',
+          push: (context) {
+            context.pushNamed('deviceEnumerationView');
+          })
     ];
   },
 );

@@ -1,64 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:equatable/equatable.dart';
-import 'package:logger/logger.dart';
 
-final loggerProvider = Provider((_) => Logger());
-
-final steamStatusProvider =
-    StateNotifierProvider<StreamStatusNotifier, StreamStatus>(
-  (ref) => StreamStatusNotifier(ref),
-);
-
-class StreamStatusNotifier extends StateNotifier<StreamStatus> {
-  StreamStatusNotifier(this.ref) : super(StreamStatus());
-  final Ref ref;
-
-  void makeCall() async {
-    final mediaConstraints = <String, dynamic>{
-      'audio': false,
-      'video': {
-        'mandatory': {
-          'minWidth': '640',
-          'minHeight': '480',
-          'minFrameRate': '30',
-        },
-        'facingMode': 'user',
-        'optional': [],
-      }
-    };
-
-    try {
-      final localStream =
-          await navigator.mediaDevices.getUserMedia(mediaConstraints);
-      state = StreamStatus(localStream: localStream, isCalling: true);
-      ref.read(loggerProvider).i('makeCall success');
-    } catch (e) {
-      ref.read(loggerProvider).e(e.toString());
-    }
-  }
-
-  void hangUp() async {
-    try {
-      await state.localStream?.dispose();
-      state = StreamStatus(localStream: null);
-      ref.read(loggerProvider).i('hangUp success');
-    } catch (e) {
-      ref.read(loggerProvider).e(e.toString());
-    }
-  }
-}
-
-class StreamStatus extends Equatable {
-  StreamStatus({this.localStream, this.isCalling = false});
-
-  MediaStream? localStream;
-  bool isCalling = false;
-
-  @override
-  List<Object?> get props => [localStream, isCalling];
-}
+import '../Models/stream_status.dart';
 
 class GetUserMediaPage extends ConsumerStatefulWidget {
   const GetUserMediaPage({Key? key}) : super(key: key);
