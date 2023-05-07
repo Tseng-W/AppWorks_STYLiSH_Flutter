@@ -1,7 +1,23 @@
 import 'package:flutter/material.dart';
+import 'package:stylish_wen/router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
+final mainRouteProvider = Provider(
+  (_) {
+    return <RouteItem>[
+      RouteItem(
+        title: 'GetUserMedia',
+        push: (context) {
+          context.pushNamed('getUserMedia');
+        },
+      ),
+    ];
+  },
+);
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -10,26 +26,22 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
+      routerConfig: goRouter,
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.grey,
       ),
-      home: const MyHomePage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class MyHomePage extends ConsumerWidget {
   const MyHomePage({super.key});
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final items = ref.watch(mainRouteProvider);
     return Scaffold(
       appBar: AppBar(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -38,9 +50,24 @@ class _MyHomePageState extends State<MyHomePage> {
             height: 36,
             fit: BoxFit.contain,
           )),
-      body: Column(
-        children: const [Text('asdasd')],
-      ),
+      body: ListView.builder(
+          shrinkWrap: true,
+          padding: const EdgeInsets.all(0.0),
+          itemCount: items.length,
+          itemBuilder: (context, i) {
+            return _buildRow(context, items[i]);
+          }),
     );
+  }
+
+  ListBody _buildRow(context, item) {
+    return ListBody(children: <Widget>[
+      ListTile(
+        title: Text(item.title),
+        onTap: () => item.push(context),
+        trailing: const Icon(Icons.arrow_right),
+      ),
+      const Divider()
+    ]);
   }
 }
