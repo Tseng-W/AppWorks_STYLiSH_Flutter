@@ -10,6 +10,30 @@ final remoteSteamStatusProvider =
   (ref) => StreamStatusNotifier(ref),
 );
 
+final RTCStatusProvider = StateNotifierProvider<RTCStatusNotifier, RTCStatus>(
+  (ref) => RTCStatusNotifier(ref),
+);
+
+class RTCStatusNotifier extends StateNotifier<RTCStatus> {
+  RTCStatusNotifier(this.ref) : super(RTCStatus());
+  final Ref ref;
+
+  void initPC() async {
+    final pc = await createPeerConnection({});
+    state = RTCStatus(pc: pc);
+  }
+
+  void stopPC() async {
+    await state.pc?.close();
+    state.pc = null;
+  }
+}
+
+class RTCStatus {
+  RTCStatus({this.pc});
+  RTCPeerConnection? pc;
+}
+
 class DeviceEnumerationView extends ConsumerStatefulWidget {
   const DeviceEnumerationView({Key? key}) : super(key: key);
 
@@ -24,6 +48,9 @@ class DeviceEnumerationViewState extends ConsumerState<DeviceEnumerationView> {
   RTCPeerConnection? pc1;
   RTCPeerConnection? pc2;
   var senders = <RTCRtpSender>[];
+
+  RTCDataChannel? dataChannel;
+  String? receivedMessage = null;
 
   @override
   void initState() {
@@ -88,6 +115,21 @@ class DeviceEnumerationViewState extends ConsumerState<DeviceEnumerationView> {
       print('iceConnectionState $state');
     };
 
+    dataChannel = await pc1?.createDataChannel('label', RTCDataChannelInit());
+    dataChannel?.onDataChannelState = (state) {
+      print('onDataChannelState $state');
+    };
+
+    pc2?.onDataChannel = (channel) {
+      channel.onMessage = (message) {
+        print('message $message.text');
+        setState(() {
+          receivedMessage = message.text;
+        });
+      };
+      channel.send(RTCDataChannelMessage('text'));
+    };
+
     await pc2?.addTransceiver(
         kind: RTCRtpMediaType.RTCRtpMediaTypeAudio,
         init: RTCRtpTransceiverInit(direction: TransceiverDirection.RecvOnly));
@@ -123,22 +165,56 @@ class DeviceEnumerationViewState extends ConsumerState<DeviceEnumerationView> {
             width: MediaQuery.of(context).size.width,
             height: MediaQuery.of(context).size.height,
             decoration: const BoxDecoration(color: Colors.black54),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                    decoration: const BoxDecoration(color: Colors.black54),
-                    child: RTCVideoView(_localRenderer),
+            child: SafeArea(
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                            decoration:
+                                const BoxDecoration(color: Colors.black54),
+                            child: RTCVideoView(_localRenderer),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 40,
+                          width: 100,
+                          child: IconButton(
+                            onPressed: () async {
+                              dataChannel
+                                  ?.send(RTCDataChannelMessage('Hi there!'));
+                            },
+                            icon: const Icon(Icons.send),
+                          ),
+                        )
+                      ],
+                    ),
                   ),
-                ),
-                Expanded(
-                    child: Container(
-                  margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                  decoration: const BoxDecoration(color: Colors.black54),
-                  child: RTCVideoView(_remoteRenderer),
-                )),
-              ],
+                  Expanded(
+                      child: Column(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          margin: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          decoration:
+                              const BoxDecoration(color: Colors.black54),
+                          child: RTCVideoView(_remoteRenderer),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 40,
+                        width: 100,
+                        child: Visibility(
+                            visible: receivedMessage != null,
+                            child: Text('receivedMessage: $receivedMessage')),
+                      ),
+                    ],
+                  )),
+                ],
+              ),
             ),
           ),
         );
