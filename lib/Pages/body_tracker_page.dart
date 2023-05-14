@@ -44,12 +44,22 @@ class _BodyTrackerViewState extends State<BodyTrackerView> {
     }
 
     final vectors = nodePositions
-        .map((e) => _anchorToVector(anchor as ARKitBodyAnchor, e)!)
+        .map((e) => _anchorToVector(anchor as ARKitBodyAnchor, e, true)!)
         .toList();
     _worldToScreenTransform(vectors);
   }
 
   Future<void> _worldToScreenTransform(List<vector.Vector3> vectors) async {
+    // final pointsViewportSpaceResults = await Future.wait(pointsViewportSpace);
+
+    // setState(() {
+    //   x = pointsViewportSpaceResults[2]!.x;
+    //   y = pointsViewportSpaceResults[2]!.y;
+    //   this.width = pointsViewportSpaceResults[0]!
+    //       .distanceTo(pointsViewportSpaceResults[3]!);
+    //   this.height = pointsViewportSpaceResults[1]!
+    //       .distanceTo(pointsViewportSpaceResults[2]!);
+    // });
     print('_worldToScreenTransform start');
     print('origin vectors: ${vectors}');
     List<Future<vector.Vector3?>> futures = vectors.map((e) {
@@ -88,20 +98,62 @@ class _BodyTrackerViewState extends State<BodyTrackerView> {
       ARKitSkeletonJointName.head,
     ];
 
-    nodePositions.map((e) => _anchorToVector(anchor, e)).forEach((element) {
+    nodePositions
+        .map((e) => _anchorToVector(anchor, e, false))
+        .forEach((element) {
       arkitController.add(_createSphere(element),
           parentNodeName: anchor.nodeName);
     });
   }
 
   vector.Vector3? _anchorToVector(
-      ARKitBodyAnchor anchor, ARKitSkeletonJointName name) {
-    final transform = anchor.skeleton.modelTransformsFor(name)!;
-    return vector.Vector3(
-      transform.getColumn(3).x,
-      transform.getColumn(3).y,
-      transform.getColumn(3).z,
-    );
+      ARKitBodyAnchor anchor, ARKitSkeletonJointName name, bool isLocal) {
+// final transform = anchor.transform;
+    // final width = anchor.referenceImagePhysicalSize.x / 2;
+    // final height = anchor.referenceImagePhysicalSize.y / 2;
+
+    // final topRight = vector.Vector4(width, 0, -height, 1)
+    //   ..applyMatrix4(transform);
+    // final bottomRight = vector.Vector4(width, 0, height, 1)
+    //   ..applyMatrix4(transform);
+    // final bottomLeft = vector.Vector4(-width, 0, -height, 1)
+    //   ..applyMatrix4(transform);
+    // final topLeft = vector.Vector4(-width, 0, height, 1)
+    //   ..applyMatrix4(transform);
+
+    // final pointsWorldSpace = [topRight, bottomRight, bottomLeft, topLeft];
+
+    // final pointsViewportSpace = pointsWorldSpace.map(
+    //     (p) => arkitController.projectPoint(vector.Vector3(p.x, p.y, p.z)));
+
+    if (anchor.isTracked == false) {
+      setState(() {
+        rects = [];
+      });
+      return null;
+    }
+
+    if (isLocal) {
+      final transform = anchor.skeleton.localTransformsFor(name)!;
+      final center = vector.Vector4(0, 0, 0, 1)..applyMatrix4(transform);
+      final centerVector3 = vector.Vector3(center.x, center.y, center.z);
+      final transformVector3 = vector.Vector3(
+        transform.getColumn(3).x,
+        transform.getColumn(3).y,
+        transform.getColumn(3).z,
+      );
+      print('center: $center');
+      print('centerVector3: $centerVector3');
+      print('transformVector3: $transformVector3');
+      return centerVector3;
+    } else {
+      final transform = anchor.skeleton.modelTransformsFor(name)!;
+      return vector.Vector3(
+        transform.getColumn(3).x,
+        transform.getColumn(3).y,
+        transform.getColumn(3).z,
+      );
+    }
   }
 
   ARKitNode _createSphere(vector.Vector3? position) {
