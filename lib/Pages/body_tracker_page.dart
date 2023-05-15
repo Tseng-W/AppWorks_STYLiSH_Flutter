@@ -1,5 +1,6 @@
 import 'package:arkit_plugin/arkit_plugin.dart';
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:vector_math/vector_math_64.dart' as vector;
 
 class BodyTrackerView extends StatefulWidget {
@@ -11,8 +12,9 @@ class BodyTrackerView extends StatefulWidget {
 
 class _BodyTrackerViewState extends State<BodyTrackerView> {
   late ARKitController arkitController;
+  final logger = Logger();
 
-  List<Rect> rects = [Rect.fromPoints(Offset(0, 0), Offset(100, 100))];
+  List<Rect> rects = [];
 
   final nodePositions = [
     ARKitSkeletonJointName.leftHand,
@@ -31,48 +33,50 @@ class _BodyTrackerViewState extends State<BodyTrackerView> {
   }
 
   _onARKitViewCreated(ARKitController arkitController) {
+    logger.d('_onARKitViewCreated');
     this.arkitController = arkitController;
     this.arkitController.onUpdateNodeForAnchor =
         (anchor) => _onUpdateNodeForAnchor(anchor);
     this.arkitController.onAddNodeForAnchor =
         (anchor) => _onAddNodeForAnchor(anchor);
+    this.arkitController.onNodeTap = (name) => _onNodeTap(name);
+  }
+
+  _onNodeTap(List<String> anchorNames) {
+    logger.d('_onNodeTap');
+    for (var element in anchorNames) {
+      arkitController.removeAnchor(element);
+    }
   }
 
   _onUpdateNodeForAnchor(ARKitAnchor anchor) {
+    logger.d('_onUpdateNodeForAnchor');
     if ((anchor is ARKitBodyAnchor && mounted) == false) {
       return;
     }
 
     final vectors = nodePositions
-        .map((e) => _anchorToVector(anchor as ARKitBodyAnchor, e, true)!)
+        .map((e) => _anchorToVector(anchor as ARKitBodyAnchor, e, true))
+        .where((element) => (element != null))
+        .map((e) => e!)
         .toList();
     _worldToScreenTransform(vectors);
   }
 
   Future<void> _worldToScreenTransform(List<vector.Vector3> vectors) async {
-    // final pointsViewportSpaceResults = await Future.wait(pointsViewportSpace);
-
-    // setState(() {
-    //   x = pointsViewportSpaceResults[2]!.x;
-    //   y = pointsViewportSpaceResults[2]!.y;
-    //   this.width = pointsViewportSpaceResults[0]!
-    //       .distanceTo(pointsViewportSpaceResults[3]!);
-    //   this.height = pointsViewportSpaceResults[1]!
-    //       .distanceTo(pointsViewportSpaceResults[2]!);
-    // });
-    print('_worldToScreenTransform start');
-    print('origin vectors: ${vectors}');
+    logger.i('_worldToScreenTransform start');
+    logger.i('vectors: $vectors');
     List<Future<vector.Vector3?>> futures = vectors.map((e) {
       return arkitController.projectPoint(e);
     }).toList();
     List<vector.Vector3?> results = await Future.wait(futures);
-    print('_worldToScreenTransform transform ended');
+    logger.i('_worldToScreenTransform transform ended');
 
-    results.forEach((element) {
+    for (var element in results) {
       if (element != null) {
-        print('new: $element');
+        logger.i('new: $element');
       }
-    });
+    }
 
     setState(() {
       rects = results
@@ -80,10 +84,11 @@ class _BodyTrackerViewState extends State<BodyTrackerView> {
               center: Offset(e!.x, e.y), width: 100, height: 100))
           .toList();
     });
-    print('_worldToScreenTransform end');
+    logger.i('_worldToScreenTransform end');
   }
 
   _onAddNodeForAnchor(ARKitAnchor anchor) {
+    logger.d('_onAddNodeForAnchor');
     if (anchor is! ARKitBodyAnchor) {
       return;
     }
@@ -142,10 +147,10 @@ class _BodyTrackerViewState extends State<BodyTrackerView> {
         transform.getColumn(3).y,
         transform.getColumn(3).z,
       );
-      print('center: $center');
-      print('centerVector3: $centerVector3');
-      print('transformVector3: $transformVector3');
-      return centerVector3;
+      logger.i('center: $center');
+      logger.i('centerVector3: $centerVector3');
+      logger.i('transformVector3: $transformVector3');
+      return transformVector3;
     } else {
       final transform = anchor.skeleton.modelTransformsFor(name)!;
       return vector.Vector3(
@@ -189,21 +194,21 @@ class MyPainter extends CustomPainter {
   MyPainter({required this.rects});
 
   List<Rect> rects;
+  final logger = Logger();
 
   @override
   void paint(Canvas canvas, Size size) {
-    print('Start drawing in canvas with size: $size');
+    logger.i('Start drawing in canvas with size: $size');
     final paint = Paint()
       ..color = Colors.red
       ..strokeWidth = 10
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
-    // canvas.drawRRect(RRect.fromRectAndRadius(, radius), paint)
-    rects.forEach((rect) {
-      print('painting rect: $rect');
+    for (var rect in rects) {
+      logger.i('painting rect: $rect');
       canvas.drawRect(rect, paint);
-    });
+    }
   }
 
   @override
